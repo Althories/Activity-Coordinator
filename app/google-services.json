@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "456120731531",
+    "project_id": "activity-coordinator",
+    "storage_bucket": "activity-coordinator.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:456120731531:android:0708274950b49091b1d18e",
+        "android_client_info": {
+          "package_name": "com.bignerdranch.android.activity_coordinator"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCobcxtKJ5zGLsGq1J_BON0IScHs-MLcmo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
