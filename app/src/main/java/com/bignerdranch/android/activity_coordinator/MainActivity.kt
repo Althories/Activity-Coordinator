@@ -19,11 +19,11 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 // when you want to reference a class itself (not an instance of it) you use ::class. But startActivity and Intent are Java-based Android APIs, so they expect a Java-style class reference.
-        findViewById<Button>(R.id.true_button).setOnClickListener {
+        findViewById<Button>(R.id.profile_button).setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
 
-        findViewById<Button>(R.id.false_button).setOnClickListener {
+        findViewById<Button>(R.id.filter_button).setOnClickListener {
             startActivity(Intent(this, FilterActivity::class.java))
         }
     }
