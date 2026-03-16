@@ -36,7 +36,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tv_result_count"
+                android:id="@+id/result_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="All nearby people"
@@ -82,14 +82,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:text="Music  ✕"
-                android:textColor="#FF5C5C"
+                android:textColor="#00D4B4"
                 android:textSize="12dp"
                 android:textStyle="bold"
                 android:paddingStart="10dp"
                 android:paddingEnd="10dp"
                 android:paddingTop="6dp"
                 android:paddingBottom="6dp"
-                android:background="#22FF5C5C"/>
+                android:background="#2200D4B4"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -190,17 +190,17 @@
                         android:paddingEnd="10dp"
                         android:paddingTop="5dp"
                         android:paddingBottom="5dp"
-                        android:textColor="#FF5C5C"
+                        android:textColor="#00D4B4"
                         android:textSize="13dp"
                         android:textStyle="bold"
-                        android:background="#22FF5C5C"
+                        android:background="#2200D4B4"
                         android:text="67%" />
 
                 </LinearLayout>
 
                 <!-- Bio -->
                 <TextView
-                    android:id="@+id/tv_bio_1"
+                    android:id="@+id/bio_1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
@@ -220,21 +220,21 @@
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="7dp"
                         android:text="Music"
-                        android:textColor="#FF5C5C"
+                        android:textColor="#8888A4"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:paddingStart="9dp"
                         android:paddingEnd="9dp"
                         android:paddingTop="5dp"
                         android:paddingBottom="5dp"
-                        android:background="#22FF5C5C"/>
+                        android:background="#0D0D14"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="7dp"
                         android:text="Hiking"
-                        android:textColor="#00D4B4"
+                        android:textColor="#8888A4"
                         android:textSize="11dp"
                         android:paddingStart="9dp"
                         android:paddingEnd="9dp"
@@ -333,10 +333,10 @@
                         android:paddingEnd="10dp"
                         android:paddingTop="5dp"
                         android:paddingBottom="5dp"
-                        android:textColor="#FF5C5C"
+                        android:textColor="#00D4B4"
                         android:textSize="13dp"
                         android:textStyle="bold"
-                        android:background="#22FF5C5C"
+                        android:background="#2200D4B4"
                         android:text="85%" />
 
                 </LinearLayout>
