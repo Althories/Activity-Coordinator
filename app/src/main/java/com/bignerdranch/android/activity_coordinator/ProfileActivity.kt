@@ -1,15 +1,99 @@
 package com.bignerdranch.android.activity_coordinator
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.Filter
+import com.google.firebase.firestore.firestore
 
 class ProfileActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+
+        // ======================================================================================= //
+        // The following code is boilerplate from Firebase to test that firestore is set up correctly.
+        val db = Firebase.firestore
+        val TAG = "ProfileActivity"
+        /*
+        // Create a new user with a first and last name
+        val user = hashMapOf(
+            "first" to "Ada",
+            "last" to "Lovelace",
+            "born" to 1815,
+        )
+
+        // Add a new document with a generated ID
+        db.collection("users")
+            .add(user)
+            .addOnSuccessListener { documentReference ->
+                Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Error adding document", e)
+            }
+
+        // Create a new user with a first, middle, and last name
+        val user2 = hashMapOf(
+            "first" to "Alan",
+            "middle" to "Mathison",
+            "last" to "Turing",
+            "born" to 1912,
+        )
+
+        // Add a new document with a generated ID
+        db.collection("users")
+            .add(user2)
+            .addOnSuccessListener { documentReference ->
+                Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Error adding document", e)
+            }
+
+        db.collection("users")
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    Log.d(TAG, "${document.id} => ${document.data}")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w(TAG, "Error getting documents.", exception)
+            }
+
+         */
+        // ======================================================================================= //
+
+        // Hardcoded example user - to be replaced with currently logged-in user
+        val user = hashMapOf(
+            "uid" to 1,
+            "name" to "CooperPtacek",
+            "email" to "cptacek@gustavus.edu"
+        )
+
+        // Check if user with given UID exists in the database and if not, add them
+        db.collection("users")
+            .where(Filter.equalTo("uid", user["uid"]))
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty){
+                    db.collection("users")
+                        .add(user)
+                        .addOnSuccessListener { documentReference ->
+                            Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w(TAG, "Error adding document", e)
+                        }
+                } else {
+                    Log.d(TAG, "User with UID ${user["uid"]} already exists")
+                }
+            }
 
         //List of all editable profile text fields
         val editableFields = listOf(
@@ -39,6 +123,34 @@ class ProfileActivity : AppCompatActivity() {
         editButton.setOnClickListener {
             isEditing = !isEditing //Toggles edit state
             applyEditState(isEditing)
+            if (!isEditing) { // upon pressing Save
+                Log.d(TAG, (findViewById<EditText>(R.id.profileName).text).toString())
+                Log.d(TAG, (findViewById<EditText>(R.id.profileLocation).text).toString())
+                Log.d(TAG, (findViewById<EditText>(R.id.profileDescription).text).toString())
+
+                // Update the database with the new profile information.
+                db.collection("users")
+                    .where(Filter.equalTo("uid", user["uid"]))
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        if (querySnapshot.size() > 1) {
+                            error("There is more than 1 user in the database with the UID ${user["uid"]}!")
+                        }
+                        db.document("users/${querySnapshot.documents[0].id}")
+                            .update("profileName", (findViewById<EditText>(R.id.profileName).text).toString(),
+                                "profileLocation", (findViewById<EditText>(R.id.profileLocation).text).toString(),
+                                "profileDescription", (findViewById<EditText>(R.id.profileDescription).text).toString())
+                            .addOnSuccessListener {
+                                Log.d(TAG, "Document at users/${querySnapshot.documents[0].id} successfully updated.")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w(TAG, "Error updating document", e)
+                            }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w(TAG, "Error finding document", e)
+                    }
+                }
             }
         }
     }
