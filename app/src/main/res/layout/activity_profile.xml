@@ -80,7 +80,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="10dp">
+                    android:layout_marginBottom="0dp">
 
                     <!-- Avatar circle -->
                     <TextView
@@ -112,6 +112,8 @@
                             android:inputType="text"
                             android:focusable="false"
                             android:focusableInTouchMode="false"
+                            android:hint="Enter name, age..."
+                            android:textColorHint="#FFFFFF"
                             android:text="Cooper Ptacek, 21" />
 
                         <EditText
@@ -123,6 +125,8 @@
                             android:inputType="text"
                             android:focusable="false"
                             android:focusableInTouchMode="false"
+                            android:hint="Enter Location..."
+                            android:textColorHint="#8888A4"
                             android:text="Forest Lake, MN" />
 
                     </LinearLayout>
@@ -133,13 +137,15 @@
                     android:id="@+id/profileDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
+                    android:layout_marginBottom="0dp"
                     android:textColor="#8888A4"
                     android:textSize="13sp"
                     android:maxLines="2"
-                    android:inputType="text"
+                    android:inputType="textMultiLine"
                     android:focusable="false"
                     android:focusableInTouchMode="false"
+                    android:hint="Enter bio..."
+                    android:textColorHint="#8888A4"
                     android:text="Statistics and Computer Science Major at Gustavus Adolphus College. Professional Nerd." />
 
                 <!-- Interest chips -->
