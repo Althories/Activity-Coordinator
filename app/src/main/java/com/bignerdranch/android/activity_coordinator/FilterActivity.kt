@@ -233,6 +233,8 @@ class FilterActivity : AppCompatActivity() {
                 }
                 // Rebuild the pill row now that one filter was removed
                 updateActiveFilterRow()
+                updateProfiles()
+                btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
             }
             // Add the finished pill into the horizontal scroll container
             layoutActiveFilters.addView(pill)
