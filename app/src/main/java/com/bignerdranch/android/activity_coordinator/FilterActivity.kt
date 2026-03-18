@@ -3,6 +3,7 @@ package com.bignerdranch.android.activity_coordinator
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -11,6 +12,11 @@ import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.Filter
+import kotlinx.coroutines.tasks.await
+
 
 class FilterActivity : AppCompatActivity() {
 
@@ -20,17 +26,27 @@ class FilterActivity : AppCompatActivity() {
     private lateinit var scrollActiveFilters: HorizontalScrollView
     private lateinit var layoutActiveFilters: LinearLayout
     private lateinit var ResultCount: TextView
+
     private val activeFilters = mutableSetOf<String>()
+    private val show_users = mutableSetOf<String>()
+    val TAG = "FilterActivity"
+    val db = Firebase.firestore
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContentView(R.layout.activity_filter)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.filter)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+
+
 
         // Hook up views
         bottomSheet = findViewById(R.id.bottom_sheet)
@@ -57,6 +73,7 @@ class FilterActivity : AppCompatActivity() {
 
         // When Apply is tapped, slide the sheet back down then hide it
         btnApplyFilter.setOnClickListener {
+            updateProfiles()
             bottomSheet.animate()
                 .translationY(bottomSheet.height.toFloat())
                 .setDuration(300)
@@ -65,6 +82,55 @@ class FilterActivity : AppCompatActivity() {
                 }
                 .start()
         }
+
+
+
+
+    }
+
+    private fun updateProfiles() {
+
+        show_users.clear()
+        db.collection("users")
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    //Log.d(TAG, "${document.id} => ${document.data}")
+                    val cats = "${document.data.get("categories")}".split(",")
+
+                    activeFilters.forEach {
+
+
+                        if (it.lowercase() in cats)
+                            show_users.add("${document.data.get("name")}") // Can change to desired value
+                        //WHY THE H*CK DOES KOTLIN NOT HAVE BREAKS AND CONTINUES
+                    }
+                    Log.d(TAG, "This is users $show_users")
+
+                }
+
+                val emptyFlag = show_users.isEmpty()
+                val noMatches = activeFilters.isNotEmpty() && emptyFlag
+
+                val temp = findViewById<LinearLayout>(R.id.card_person_3)
+                if("BMCPS0lhjem" in show_users || emptyFlag) {temp.visibility = android.view.View.VISIBLE}
+                else  temp.visibility = android.view.View.GONE
+                val temp2 = findViewById<LinearLayout>(R.id.card_person_2)
+                if("NikKopek" in show_users || emptyFlag) {temp2.visibility = android.view.View.VISIBLE}
+                else  temp2.visibility = android.view.View.GONE
+                val temp3 = findViewById<LinearLayout>(R.id.card_person_1)
+                if("CooperPtacek" in show_users || emptyFlag) {temp3.visibility = android.view.View.VISIBLE}
+                else  temp3.visibility = android.view.View.GONE
+
+                ResultCount.text =
+                    if (noMatches) "No matches found, showing all friends"
+                    else if (activeFilters.isEmpty()) "All nearby people"
+                    else "${listOf(temp, temp2, temp3).count { it.visibility == android.view.View.VISIBLE }} matches found"
+
+            }
+            .addOnFailureListener { exception ->
+                Log.w(TAG, "Error getting documents.", exception)
+            }
     }
     private fun setupChips() {
         // Maps each chip's view ID to the interest label it represents
@@ -75,9 +141,9 @@ class FilterActivity : AppCompatActivity() {
             R.id.chip_gaming  to "Gaming",
             R.id.chip_reading to "Reading",
             R.id.chip_travel  to "Travel",
-            R.id.chip_yoga    to "Yoga",
-            R.id.chip_coffee  to "Coffee",
-            R.id.chip_fitness to "Fitness"
+            R.id.chip_merge_dragons    to "Merge Dragons",
+            R.id.chip_coding  to "Coding",
+            R.id.chip_disc_golf to "Disc Golf"
         )
         // Loop through every chip and attach a click listener to each one
         chips.forEach { (chipId, label) ->
@@ -96,6 +162,9 @@ class FilterActivity : AppCompatActivity() {
                 }
                 // Rebuild the active filter pills row to reflect the new state
                 updateActiveFilterRow()
+                // filter apply button is dynamic based on if filters are selected
+                btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
+
             }
         }
     }
@@ -152,9 +221,9 @@ class FilterActivity : AppCompatActivity() {
                     "Gaming"  -> R.id.chip_gaming
                     "Reading" -> R.id.chip_reading
                     "Travel"  -> R.id.chip_travel
-                    "Yoga"    -> R.id.chip_yoga
-                    "Coffee"  -> R.id.chip_coffee
-                    "Fitness" -> R.id.chip_fitness
+                    "Merge Dragons" -> R.id.chip_merge_dragons
+                    "Coding"  -> R.id.chip_coding
+                    "Disc Golf" -> R.id.chip_disc_golf
                     else      -> null
                 }
                 // Reset the chip in the sheet back to unselected gray
@@ -164,9 +233,12 @@ class FilterActivity : AppCompatActivity() {
                 }
                 // Rebuild the pill row now that one filter was removed
                 updateActiveFilterRow()
+                updateProfiles()
+                btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
             }
             // Add the finished pill into the horizontal scroll container
             layoutActiveFilters.addView(pill)
+
         }
     }
 
