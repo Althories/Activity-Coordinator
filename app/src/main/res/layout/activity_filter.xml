@@ -386,7 +386,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Cooking"
+                        android:text="Music"
                         android:textColor="#8888A4"
                         android:textSize="11dp"
                         android:paddingStart="9dp"

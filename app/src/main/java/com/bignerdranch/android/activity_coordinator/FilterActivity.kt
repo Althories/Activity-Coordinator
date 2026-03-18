@@ -108,7 +108,10 @@ class FilterActivity : AppCompatActivity() {
                     Log.d(TAG, "This is users $show_users")
 
                 }
+
                 val emptyFlag = show_users.isEmpty()
+                val noMatches = activeFilters.isNotEmpty() && emptyFlag
+
                 val temp = findViewById<LinearLayout>(R.id.card_person_3)
                 if("BMCPS0lhjem" in show_users || emptyFlag) {temp.visibility = android.view.View.VISIBLE}
                 else  temp.visibility = android.view.View.GONE
@@ -119,7 +122,10 @@ class FilterActivity : AppCompatActivity() {
                 if("CooperPtacek" in show_users || emptyFlag) {temp3.visibility = android.view.View.VISIBLE}
                 else  temp3.visibility = android.view.View.GONE
 
-
+                ResultCount.text =
+                    if (noMatches) "No matches found, showing all friends"
+                    else if (activeFilters.isEmpty()) "All nearby people"
+                    else "${listOf(temp, temp2, temp3).count { it.visibility == android.view.View.VISIBLE }} matches found"
 
             }
             .addOnFailureListener { exception ->
@@ -156,6 +162,9 @@ class FilterActivity : AppCompatActivity() {
                 }
                 // Rebuild the active filter pills row to reflect the new state
                 updateActiveFilterRow()
+                // filter apply button is dynamic based on if filters are selected
+                btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
+
             }
         }
     }
