@@ -68,12 +68,13 @@ class ProfileActivity : AppCompatActivity() {
 
          */
         // ======================================================================================= //
-
+//Branden
         // Hardcoded example user - to be replaced with currently logged-in user
         val user = hashMapOf(
             "uid" to 1,
             "name" to "CooperPtacek",
-            "email" to "cptacek@gustavus.edu"
+            "email" to "cptacek@gustavus.edu",
+            "categories"  to "music,hiking,disc golf"
         )
 
         // Check if user with given UID exists in the database and if not, add them
@@ -94,13 +95,14 @@ class ProfileActivity : AppCompatActivity() {
                     Log.d(TAG, "User with UID ${user["uid"]} already exists")
                 }
             }
-
+//Branden ^
         //List of all editable profile text fields
         val editableFields = listOf(
             findViewById<EditText>(R.id.profileName),
             findViewById<EditText>(R.id.profileLocation),
             findViewById<EditText>(R.id.profileDescription)
         )
+
 
         val editButton = findViewById<Button>(R.id.edit_profile_button)
         var isEditing = false //Tells EditViews how they should look based on activity state
@@ -123,7 +125,7 @@ class ProfileActivity : AppCompatActivity() {
         editButton.setOnClickListener {
             isEditing = !isEditing //Toggles edit state
             applyEditState(isEditing)
-            if (!isEditing) { // upon pressing Save
+            if (!isEditing) { // upon pressing Save  BRANDEN
                 Log.d(TAG, (findViewById<EditText>(R.id.profileName).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileLocation).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileDescription).text).toString())
