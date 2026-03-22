@@ -9,6 +9,12 @@
     android:background="#0D0D14"
     tools:context=".FilterActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
     <!-- TOP BAR  –  title + filter button -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -159,21 +165,21 @@
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="7dp"
                         android:text="Music"
-                        android:textColor="#FF5C5C"
+                        android:textColor="#8888A4"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:paddingStart="9dp"
                         android:paddingEnd="9dp"
                         android:paddingTop="5dp"
                         android:paddingBottom="5dp"
-                        android:background="#22FF5C5C"/>
+                        android:background="#0D0D14"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="7dp"
                         android:text="Hiking"
-                        android:textColor="#00D4B4"
+                        android:textColor="#8888A4"
                         android:textSize="11dp"
                         android:paddingStart="9dp"
                         android:paddingEnd="9dp"
@@ -196,4 +202,10 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
+    </LinearLayout>
+
+    <include
+        layout="@layout/nav_bar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp" />
 </LinearLayout>

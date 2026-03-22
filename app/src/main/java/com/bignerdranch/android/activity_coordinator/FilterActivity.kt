@@ -16,6 +16,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.Filter
 import kotlinx.coroutines.tasks.await
+import android.content.Intent
 
 
 class FilterActivity : AppCompatActivity() {
@@ -36,16 +37,19 @@ class FilterActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        //enableEdgeToEdge()
 
         setContentView(R.layout.activity_filter)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.filter)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        //ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.filter)) { v, insets ->
+            //val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            //v.setPadding(systemBars.left, systemBars.top, systemBars.right,0)
+            //insets
+        //}
+
+        // Nav bar
+        findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
         }
-
-
 
 
         // Hook up views
@@ -61,6 +65,7 @@ class FilterActivity : AppCompatActivity() {
 
         // Open filters sheet
         btnFilter.setOnClickListener {
+            findViewById<LinearLayout>(R.id.nav_bar).visibility = android.view.View.GONE
             // Make the sheet visible so it can be measured and animated
             bottomSheet.visibility = android.view.View.VISIBLE
             // Start the sheet just below the screen
@@ -79,6 +84,8 @@ class FilterActivity : AppCompatActivity() {
                 .setDuration(300)
                 .withEndAction {
                     bottomSheet.visibility = android.view.View.GONE
+                    findViewById<LinearLayout>(R.id.nav_bar).visibility = android.view.View.VISIBLE
+
                 }
                 .start()
         }

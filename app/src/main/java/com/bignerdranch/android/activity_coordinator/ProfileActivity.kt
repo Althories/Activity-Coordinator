@@ -8,6 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.firestore
+import android.content.Intent
+import android.widget.LinearLayout
+
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -154,5 +157,8 @@ class ProfileActivity : AppCompatActivity() {
                     }
                 }
             }
+        findViewById<LinearLayout>(R.id.nav_filter).setOnClickListener {
+            startActivity(Intent(this, FilterActivity::class.java))
         }
-    }
+        }
+}

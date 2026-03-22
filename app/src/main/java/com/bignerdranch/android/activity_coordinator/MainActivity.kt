@@ -2,29 +2,45 @@ package com.bignerdranch.android.activity_coordinator
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
-import androidx.activity.enableEdgeToEdge
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.activity.enableEdgeToEdge
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge() // allows app to go behind system bars
-        setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets -> // for edge to egde
+        enableEdgeToEdge()
+        setContentView(R.layout.activity_login)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-// when you want to reference a class itself (not an instance of it) you use ::class. But startActivity and Intent are Java-based Android APIs, so they expect a Java-style class reference.
-        findViewById<Button>(R.id.profile_button).setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
-        }
 
-        findViewById<Button>(R.id.filter_button).setOnClickListener {
-            startActivity(Intent(this, FilterActivity::class.java))
+        val Email    = findViewById<EditText>(R.id.email)
+        val Password = findViewById<EditText>(R.id.password)
+        val Error    = findViewById<TextView>(R.id.error)
+        val btnLogin   = findViewById<Button>(R.id.loginbtn)
+
+        btnLogin.setOnClickListener {
+            val email = Email.text.toString().trim()
+            val password = Password.text.toString().trim()
+
+            if (email == "dummy@email.com" && password == "password") {
+                // Correct credentials, go to filter page
+                startActivity(Intent(this, FilterActivity::class.java))
+                finish() // remove login from stack so back button doesn't return here
+            } else {
+                // Wrong credentials, show error
+                Error.visibility = View.VISIBLE
+            }
         }
     }
 }
