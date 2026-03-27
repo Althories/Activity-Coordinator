@@ -22,6 +22,7 @@
         </activity>
         <activity android:name=".FilterActivity" />
         <activity android:name=".ProfileActivity" />
+        <activity android:name=".FriendSearchActivity" />
     </application>
 
 </manifest>

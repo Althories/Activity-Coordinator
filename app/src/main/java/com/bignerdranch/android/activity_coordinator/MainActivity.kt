@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
             val email = Email.text.toString().trim()
             val password = Password.text.toString().trim()
 
-            if (email == "dummy@email.com" && password == "password") {
+            if ((email == "dummy@email.com" && password == "password") || email == "" && password == "") {
                 // Correct credentials, go to filter page
                 startActivity(Intent(this, FilterActivity::class.java))
                 finish() // remove login from stack so back button doesn't return here

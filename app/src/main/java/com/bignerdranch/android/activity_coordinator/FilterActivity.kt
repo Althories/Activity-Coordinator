@@ -50,6 +50,9 @@ class FilterActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
+        findViewById<LinearLayout>(R.id.nav_search).setOnClickListener {
+            startActivity(Intent(this, FriendSearchActivity::class.java))
+        }
 
 
         // Hook up views
