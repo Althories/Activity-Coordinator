@@ -17,7 +17,8 @@ import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.Filter
 import kotlinx.coroutines.tasks.await
 import android.content.Intent
-
+import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.firestore.FieldPath
 
 class FilterActivity : AppCompatActivity() {
 
@@ -27,24 +28,21 @@ class FilterActivity : AppCompatActivity() {
     private lateinit var scrollActiveFilters: HorizontalScrollView
     private lateinit var layoutActiveFilters: LinearLayout
     private lateinit var ResultCount: TextView
+    private lateinit var friendAdapter: FriendAdapter
+    private lateinit var recyclerView: RecyclerView
 
     private val activeFilters = mutableSetOf<String>()
     private val show_users = mutableSetOf<String>()
+    private var currentUserId: String? = null //Stored ID of currently logged in user
     val TAG = "FilterActivity"
     val db = Firebase.firestore
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //enableEdgeToEdge()
-
         setContentView(R.layout.activity_filter)
-        //ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.filter)) { v, insets ->
-            //val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            //v.setPadding(systemBars.left, systemBars.top, systemBars.right,0)
-            //insets
-        //}
+
+        //Retrieve the user's ID passed from the Login Activity.
+        currentUserId = intent.getStringExtra("USER_ID")
 
         // Nav bar
         findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
@@ -54,6 +52,11 @@ class FilterActivity : AppCompatActivity() {
             startActivity(Intent(this, FriendSearchActivity::class.java))
         }
 
+        //Setup for recyclerView to do its magic. Initializes FriendAdapter as empty to be filled given user info
+        recyclerView = findViewById(R.id.recycler_friends)
+        recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        friendAdapter = FriendAdapter(emptyList())
+        recyclerView.adapter = friendAdapter
 
         // Hook up views
         bottomSheet = findViewById(R.id.bottom_sheet)
@@ -92,56 +95,69 @@ class FilterActivity : AppCompatActivity() {
                 }
                 .start()
         }
-
-
-
-
+        updateProfiles() //Initial call to display all friends on FilterActivity boot
     }
 
     private fun updateProfiles() {
+        val uid = UserSession.currentUserId //Fetches ID from UserSession object to prevent data loss upon switching activities
 
-        show_users.clear()
-        db.collection("users")
-            .get()
-            .addOnSuccessListener { result ->
-                for (document in result) {
-                    //Log.d(TAG, "${document.id} => ${document.data}")
-                    val cats = "${document.data.get("categories")}".split(",")
-
-                    activeFilters.forEach {
-
-
-                        if (it.lowercase() in cats)
-                            show_users.add("${document.data.get("name")}") // Can change to desired value
-                        //WHY THE H*CK DOES KOTLIN NOT HAVE BREAKS AND CONTINUES
-                    }
-                    Log.d(TAG, "This is users $show_users")
-
+        if (uid == null) { //If the app process was killed, return to login
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return
+        }
+        //Queries the database for the logged in user's document
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { userDoc ->
+                if (!userDoc.exists()) {
+                    Log.e("FIRESTORE_DEBUG", "CRITICAL: Document '$currentUserId' does not exist!")
+                    return@addOnSuccessListener
                 }
 
-                val emptyFlag = show_users.isEmpty()
-                val noMatches = activeFilters.isNotEmpty() && emptyFlag
+                //Fetches friend user ID array from logged in user's document
+                val friendIdsRaw = userDoc.get("friends")
+                val friendIdStrings = (friendIdsRaw as? List<*>)?.map { it.toString() } ?: emptyList()
 
-                val temp = findViewById<LinearLayout>(R.id.card_person_3)
-                if("BMCPS0lhjem" in show_users || emptyFlag) {temp.visibility = android.view.View.VISIBLE}
-                else  temp.visibility = android.view.View.GONE
-                val temp2 = findViewById<LinearLayout>(R.id.card_person_2)
-                if("NikKopek" in show_users || emptyFlag) {temp2.visibility = android.view.View.VISIBLE}
-                else  temp2.visibility = android.view.View.GONE
-                val temp3 = findViewById<LinearLayout>(R.id.card_person_1)
-                if("CooperPtacek" in show_users || emptyFlag) {temp3.visibility = android.view.View.VISIBLE}
-                else  temp3.visibility = android.view.View.GONE
+                if (friendIdStrings.isNotEmpty()) {
+                    db.collection("users")
+                        .whereIn(FieldPath.documentId(), friendIdStrings)
+                        .get()
+                        .addOnSuccessListener { documents ->
+                            //Convert Firestore documents to Friend objects to be processed by FriendAdapter.kt
+                            val friendsList = documents.map { doc ->
+                                Friend(
+                                    id = doc.id,
+                                    name = doc.getString("name") ?: "Unknown",
+                                    categories = (doc.get("categories") as? List<String>) ?: emptyList(), //Adjustment to handle categories as an Array in Firestore
+                                    location = doc.getString("profileLocation") ?: "Unknown Location",
+                                    bio = doc.getString("profileDescription") ?: "No bio provided"
+                                )
+                            }
 
-                ResultCount.text =
-                    if (noMatches) "No matches found, showing all friends"
-                    else if (activeFilters.isEmpty()) "All nearby people"
-                    else "${listOf(temp, temp2, temp3).count { it.visibility == android.view.View.VISIBLE }} matches found"
-
-            }
-            .addOnFailureListener { exception ->
-                Log.w(TAG, "Error getting documents.", exception)
+                            //Filtering logic. Determines what to show based on selected filters
+                            val filteredFriends = if (activeFilters.isEmpty()) {
+                                friendsList
+                            } else {
+                                //Check if any of the friend's categories match the active filters
+                                friendsList.filter { friend ->
+                                    activeFilters.any { filter ->
+                                        friend.categories.any { it.equals(filter, ignoreCase = true) }
+                                    }
+                                }
+                            }
+                            //Update the UI based on filter results
+                            displayFriends(filteredFriends)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("FIRESTORE_DEBUG", "Query Failed!", e)
+                        }
+                } else {
+                    Log.w("FIRESTORE_DEBUG", "Friend list is empty in DB.")
+                    displayFriends(emptyList()) //User has no friends
+                }
             }
     }
+
     private fun setupChips() {
         // Maps each chip's view ID to the interest label it represents
         val chips = mapOf(
@@ -177,6 +193,12 @@ class FilterActivity : AppCompatActivity() {
 
             }
         }
+    }
+
+    //Helper function to updateProfile(). Calls friendAdapter to update the UI based on filter results
+    private fun displayFriends(friends: List<Friend>) {
+        friendAdapter.updateData(friends)
+        ResultCount.text = "${friends.size} matches found"
     }
 
     private fun updateActiveFilterRow() {

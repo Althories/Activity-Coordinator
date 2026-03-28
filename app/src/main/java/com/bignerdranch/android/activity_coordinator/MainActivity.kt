@@ -15,7 +15,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
 
-    private val db = FirebaseFirestore.getInstance()    //Init Firestore instance
+    private val db = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,10 +54,15 @@ class MainActivity : AppCompatActivity() {
                         errorText.visibility = View.VISIBLE
                     } else {
                         val document = documents.documents[0] //Grabs first result from firestone query. Ideally this is the only result
-                        val dbPassword = document.getString("password") //fetches db password to compare with input
+                        val dbPassword = document.getString("password") //Fetches db password to compare with input
 
                         if (dbPassword == passwordInput) {  //Passwords match, user may login
-                            startActivity(Intent(this, FilterActivity::class.java))
+                            val loggedInId = document.id
+                            UserSession.currentUserId = loggedInId //Logged in user saved globally to prevent issues
+                            val intent = Intent(this, FilterActivity::class.java)
+                            intent.putExtra("USER_ID", loggedInId) //Sent to FilterActivity to display correct friends list on boot
+
+                            startActivity(intent)
                             finish()
                         } else { //passwords did not match, womp womp
                             errorText.text = "Invalid password entered"
