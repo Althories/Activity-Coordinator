@@ -11,8 +11,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.activity.enableEdgeToEdge
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
+
+    private val db = FirebaseFirestore.getInstance()    //Init Firestore instance
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,23 +27,48 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val Email    = findViewById<EditText>(R.id.email)
-        val Password = findViewById<EditText>(R.id.password)
-        val Error    = findViewById<TextView>(R.id.error)
+        val emailField    = findViewById<EditText>(R.id.email)
+        val passwordField = findViewById<EditText>(R.id.password)
+        val errorText    = findViewById<TextView>(R.id.error)
         val btnLogin   = findViewById<Button>(R.id.loginbtn)
 
         btnLogin.setOnClickListener {
-            val email = Email.text.toString().trim()
-            val password = Password.text.toString().trim()
+            val emailInput = emailField.text.toString().trim()
+            val passwordInput = passwordField.text.toString().trim()
 
-            if ((email == "dummy@email.com" && password == "password") || email == "" && password == "") {
-                // Correct credentials, go to filter page
-                startActivity(Intent(this, FilterActivity::class.java))
-                finish() // remove login from stack so back button doesn't return here
-            } else {
-                // Wrong credentials, show error
-                Error.visibility = View.VISIBLE
+            //Ensures user actually entered content for both input fields
+            if (emailInput.isEmpty() || passwordInput.isEmpty()) {
+                errorText.text = "Please fill in all fields."
+                errorText.visibility = View.VISIBLE
+                return@setOnClickListener
             }
+
+            //Firestore Query searching the "users" collection.
+            //Compares the input email to the email field of each document (user) and returns a match
+            db.collection("users")
+                .whereEqualTo("email", emailInput)
+                .get()
+                .addOnSuccessListener { documents ->
+                    if (documents.isEmpty) {    //Input email does not match with an existing email in db
+                        errorText.text = "Unregistered email entered"
+                        errorText.visibility = View.VISIBLE
+                    } else {
+                        val document = documents.documents[0] //Grabs first result from firestone query. Ideally this is the only result
+                        val dbPassword = document.getString("password") //fetches db password to compare with input
+
+                        if (dbPassword == passwordInput) {  //Passwords match, user may login
+                            startActivity(Intent(this, FilterActivity::class.java))
+                            finish()
+                        } else { //passwords did not match, womp womp
+                            errorText.text = "Invalid password entered"
+                            errorText.visibility = View.VISIBLE
+                        }
+                    }
+                }
+                .addOnFailureListener {e -> //Handler for permission issues
+                    errorText.text = "Login failed: ${e.message}"
+                    errorText.visibility = View.VISIBLE
+                }
         }
     }
 }
