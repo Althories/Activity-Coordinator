@@ -198,7 +198,7 @@ class FilterActivity : AppCompatActivity() {
     //Helper function to updateProfile(). Calls friendAdapter to update the UI based on filter results
     private fun displayFriends(friends: List<Friend>) {
         friendAdapter.updateData(friends)
-        ResultCount.text = "${friends.size} matches found"
+        ResultCount.text = if (activeFilters.isEmpty()) "All friends" else "${friends.size} matches found"
     }
 
     private fun updateActiveFilterRow() {
@@ -208,7 +208,7 @@ class FilterActivity : AppCompatActivity() {
         if (activeFilters.isEmpty()) {
             // No filters active, hide the pill row and reset the subtitle
             scrollActiveFilters.visibility = android.view.View.GONE
-            ResultCount.text = "All nearby people"
+            ResultCount.text = "All friends"
             return
         }
 
