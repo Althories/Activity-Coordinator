@@ -4,13 +4,18 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 
 //Class manager. Bridges the gap between the raw Friend data and the RecyclerView UI, coordinates creation and recycling of profile cards.
-class FriendAdapter(private var friends: List<Friend>) : RecyclerView.Adapter<FriendAdapter.FriendViewHolder>() {
+class FriendAdapter(
+    private var friends: List<Friend>,
+    private val isSearchMode: Boolean, //Lets the adapter know whether the user is looking at the Filter activity or Friend Search Activity
+    private val onAddClick: ((Friend) -> Unit)? = null
+) : RecyclerView.Adapter<FriendAdapter.FriendViewHolder>() {
 
     //Container class holding the actual references to the views (TextViews, Layouts) inside a single profile card
     class FriendViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -19,6 +24,7 @@ class FriendAdapter(private var friends: List<Friend>) : RecyclerView.Adapter<Fr
         val bio: TextView = view.findViewById(R.id.friend_bio)
         val location: TextView = view.findViewById(R.id.friend_location)
         val categoriesContainer: LinearLayout = view.findViewById(R.id.friend_interests_container)
+        val actionButton: Button = view.findViewById(R.id.btn_add_friend) //Add friend button w/visibility dependent on circumstances
     }
 
     //Called when the RecyclerView needs a new card layout. It inflates the item_friend.xml and wraps it in a FriendViewHolder
@@ -61,7 +67,29 @@ class FriendAdapter(private var friends: List<Friend>) : RecyclerView.Adapter<Fr
             //Finish by adding chip to the horizontal layout
             holder.categoriesContainer.addView(chip)
         }
+
+        //"Add friend" button tracking for the UI
+        val addBtn = holder.itemView.findViewById<Button>(R.id.btn_add_friend)
+        addBtn.setOnClickListener {
+            onAddClick?.invoke(friend) //Tell the activity which friend was added
+            addBtn.text = "✓ Added"
+            addBtn.isEnabled = false //Disable the button immediately so it can't be spammed
+        }
+
+        //If the user is in the FriendSearch activity, show the Add Friend button on user's profile
+        if (isSearchMode) {
+            holder.actionButton.visibility = View.VISIBLE
+            holder.actionButton.text = "+ Add"
+            holder.actionButton.setOnClickListener {
+                onAddClick?.invoke(friend)
+                holder.actionButton.text = "✓ Added"
+                holder.actionButton.isEnabled = false
+            }
+        } else {
+            holder.actionButton.visibility = View.GONE //Not on the search activity, hide the add friend button
+        }
     }
+
     override fun getItemCount() = friends.size //Tells the RecyclerView how many total items are in a user's friends list
 
     //Refreshes shown friends list after filtering and triggers the UI to redraw itself

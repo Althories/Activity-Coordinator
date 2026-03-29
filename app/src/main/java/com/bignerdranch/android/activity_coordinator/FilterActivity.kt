@@ -55,7 +55,7 @@ class FilterActivity : AppCompatActivity() {
         //Setup for recyclerView to do its magic. Initializes FriendAdapter as empty to be filled given user info
         recyclerView = findViewById(R.id.recycler_friends)
         recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
-        friendAdapter = FriendAdapter(emptyList())
+        friendAdapter = FriendAdapter(emptyList(), isSearchMode = false)
         recyclerView.adapter = friendAdapter
 
         // Hook up views
