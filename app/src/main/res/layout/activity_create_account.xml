@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/login"
+    android:id="@+id/create_account"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -12,7 +12,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="SIFTR"
+        android:text="Create Account"
         android:textColor="#FFFFFF"
         android:textSize="28dp"
         android:textStyle="bold"
@@ -21,13 +21,25 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sign in to continue"
+        android:text="Sign up to get started"
         android:textColor="#8888A4"
         android:textSize="14dp"
         android:layout_marginBottom="40dp" />
 
     <EditText
-        android:id="@+id/email"
+        android:id="@+id/ca_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Full name"
+        android:inputType="textPersonName"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#8888A4"
+        android:backgroundTint="#2A2A38"
+        android:padding="14dp"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/ca_email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Email"
@@ -39,7 +51,7 @@
         android:layout_marginBottom="16dp" />
 
     <EditText
-        android:id="@+id/password"
+        android:id="@+id/ca_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Password"
@@ -51,33 +63,32 @@
         android:layout_marginBottom="8dp" />
 
     <TextView
-        android:id="@+id/error"
+        android:id="@+id/ca_error"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Incorrect email or password"
         android:textColor="#FF5C5C"
         android:textSize="13dp"
         android:layout_marginBottom="24dp"
         android:visibility="gone" />
 
     <Button
-        android:id="@+id/loginbtn"
+        android:id="@+id/ca_btn_create"
         android:layout_width="match_parent"
         android:layout_height="52dp"
-        android:text="Log In"
+        android:text="Create Account"
         android:textColor="#FFFFFF"
         android:textSize="15dp"
         android:textStyle="bold"
-        android:backgroundTint="#FF5C5C" />
+        android:backgroundTint="#FF5C5C"
+        android:layout_marginBottom="16dp" />
 
+    <!-- Tappable text to go back to login -->
     <TextView
-        android:id="@+id/btn_create_account"
+        android:id="@+id/ca_btn_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Don't have an account? Sign up"
+        android:text="Already have an account? Log in"
         android:textColor="#8888A4"
-        android:textSize="13dp"
-        android:layout_marginTop="16dp" />
-
+        android:textSize="13dp" />
 
 </LinearLayout>

@@ -41,7 +41,7 @@ class FriendAdapter(
 
         // Standard text bindings
         holder.name.text = friend.name
-        holder.avatar.text = friend.name.take(2).uppercase()
+        holder.avatar.text = friend.name.split(" ").take(2).joinToString("") { it.first().uppercase() }
         holder.location.text = friend.location
         holder.bio.text = friend.bio
 
