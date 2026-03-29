@@ -32,6 +32,10 @@ class MainActivity : AppCompatActivity() {
         val errorText    = findViewById<TextView>(R.id.error)
         val btnLogin   = findViewById<Button>(R.id.loginbtn)
 
+        findViewById<TextView>(R.id.btn_create_account).setOnClickListener {
+            startActivity(Intent(this, CreateAccountActivity::class.java))
+        }
+
         btnLogin.setOnClickListener {
             val emailInput = emailField.text.toString().trim()
             val passwordInput = passwordField.text.toString().trim()
