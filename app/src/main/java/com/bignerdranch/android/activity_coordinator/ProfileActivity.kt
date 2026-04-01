@@ -10,14 +10,21 @@ import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.firestore
 import android.content.Intent
 import android.widget.LinearLayout
+import kotlinx.coroutines.*
+import kotlin.collections.joinToString
+import kotlin.collections.take
+import kotlin.text.split
 
 
 class ProfileActivity : AppCompatActivity() {
-
+    var uid = UserSession.currentUserId
+    var db = Firebase.firestore
+    var TAG = "ProfileActivity"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
-
+        val temp = getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription"))
+        Log.w("BHBDUIBHDIKBJ", temp.toString())
         findViewById<Button>(R.id.btn_logout).setOnClickListener {
             // Clear the user session
             UserSession.currentUserId = null
@@ -30,8 +37,7 @@ class ProfileActivity : AppCompatActivity() {
 
         // ======================================================================================= //
         // The following code is boilerplate from Firebase to test that firestore is set up correctly.
-        val db = Firebase.firestore
-        val TAG = "ProfileActivity"
+
         /*
         // Create a new user with a first and last name
         val user = hashMapOf(
@@ -91,7 +97,7 @@ class ProfileActivity : AppCompatActivity() {
         )
 
         // Check if user with given UID exists in the database and if not, add them
-        db.collection("users")
+       /*db.collection("users")
             .where(Filter.equalTo("uid", user["uid"]))
             .get()
             .addOnSuccessListener { querySnapshot ->
@@ -99,7 +105,7 @@ class ProfileActivity : AppCompatActivity() {
                     db.collection("users")
                         .add(user)
                         .addOnSuccessListener { documentReference ->
-                            Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+                            Log.d(TAG, "DocumentSnapshot added with ID: {documentReference.id}")
                         }
                         .addOnFailureListener { e ->
                             Log.w(TAG, "Error adding document", e)
@@ -107,7 +113,7 @@ class ProfileActivity : AppCompatActivity() {
                 } else {
                     Log.d(TAG, "User with UID ${user["uid"]} already exists")
                 }
-            }
+            }*/
 //Branden ^
         //List of all editable profile text fields
         val editableFields = listOf(
@@ -145,18 +151,18 @@ class ProfileActivity : AppCompatActivity() {
 
                 // Update the database with the new profile information.
                 db.collection("users")
-                    .where(Filter.equalTo("uid", user["uid"]))
+                    .where(Filter.equalTo("uid", uid))
                     .get()
                     .addOnSuccessListener { querySnapshot ->
                         if (querySnapshot.size() > 1) {
-                            error("There is more than 1 user in the database with the UID ${user["uid"]}!")
+                            //error("There is more than 1 user in the database with the UID ${user["uid"]}!")
                         }
-                        db.document("users/${querySnapshot.documents[0].id}")
+                        db.document("users/$uid")
                             .update("profileName", (findViewById<EditText>(R.id.profileName).text).toString(),
                                 "profileLocation", (findViewById<EditText>(R.id.profileLocation).text).toString(),
                                 "profileDescription", (findViewById<EditText>(R.id.profileDescription).text).toString())
                             .addOnSuccessListener {
-                                Log.d(TAG, "Document at users/${querySnapshot.documents[0].id} successfully updated.")
+                                Log.d(TAG, "Document at users/$uid.id} successfully updated.")
                             }
                             .addOnFailureListener { e ->
                                 Log.w(TAG, "Error updating document", e)
@@ -174,4 +180,31 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(Intent(this, FriendSearchActivity::class.java))
         }
         }
+    fun getData(uid : String, names : Array<String>) {
+        Log.w(TAG, "WE ran the function")
+        //Log.w(TAG, "We ran the coroutine")
+
+
+        val returnable = names.clone()
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { userDoc ->
+                for (x in names.indices)
+                    returnable[x] = userDoc.get(names[x]).toString()
+                if(returnable[0] == "null") returnable[0] = "Your name here"
+                findViewById<EditText>(R.id.profileName).setText(returnable[0])
+                findViewById<EditText>(R.id.profileLocation).setText(returnable[1])
+                findViewById<EditText>(R.id.profileDescription).setText(returnable[2])
+                Log.w(TAG, "This is the last thing before the crash")
+                findViewById<EditText>(R.id.avatar1).setText(returnable[0].split(" ").take(2).joinToString(""){ it.first().uppercase() } )
+
+                Log.w(TAG, "We have docs")
+            }
+
+        Log.w(TAG, "We got out of the loop")
+
+
+
+
+    }
+
 }
