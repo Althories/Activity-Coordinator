@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnLogin.setOnClickListener {
-            val emailInput = emailField.text.toString().trim()
+            val emailInput = emailField.text.toString().trim().lowercase()
             val passwordInput = passwordField.text.toString().trim()
 
             //Ensures user actually entered content for both input fields
