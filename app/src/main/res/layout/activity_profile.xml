@@ -185,7 +185,7 @@
                     android:layout_marginBottom="0dp"
                     android:textColor="#8888A4"
                     android:textSize="13sp"
-                    android:maxLines="2"
+                    android:maxLines="6"
                     android:inputType="textMultiLine"
                     android:focusable="false"
                     android:focusableInTouchMode="false"
