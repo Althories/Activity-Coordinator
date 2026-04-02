@@ -120,6 +120,7 @@ class CreateAccountActivity : AppCompatActivity() {
                                             finish()
                                         }
                                 }
+                            UserSession.pfp = null // clear profile picture in case this isn't the first session - Branden
                         }
                 }
         }

@@ -21,6 +21,7 @@ object UserSession {
     // idk if i should be using an intent for this but it works
     fun getUserPfp() {
         if (currentUserId == null) {
+            pfp = null
             return
         }
         val pfpRef = storage.reference.child(
@@ -31,6 +32,7 @@ object UserSession {
                     .decodeByteArray(bytes, 0, bytes.size))
             }.addOnFailureListener { e ->
                 Log.w("UserSession","Failed to fetch profile pic", e)
+                pfp = null
             }
     }
 }
