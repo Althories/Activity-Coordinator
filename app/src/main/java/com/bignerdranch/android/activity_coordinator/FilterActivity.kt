@@ -127,7 +127,7 @@ class FilterActivity : AppCompatActivity() {
                             val friendsList = documents.map { doc ->
                                 Friend(
                                     id = doc.id,
-                                    name = doc.getString("name") ?: "Unknown",
+                                    name = doc.getString("profileName") ?: "Unknown",
                                     categories = (doc.get("categories") as? List<String>) ?: emptyList(), //Adjustment to handle categories as an Array in Firestore
                                     location = doc.getString("profileLocation") ?: "Unknown Location",
                                     bio = doc.getString("profileDescription") ?: "No bio provided"
