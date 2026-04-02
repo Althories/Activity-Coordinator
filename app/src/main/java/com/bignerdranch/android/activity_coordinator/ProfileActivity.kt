@@ -1,6 +1,5 @@
 package com.bignerdranch.android.activity_coordinator
 
-import android.content.ContentResolver
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -10,15 +9,18 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.firestore
 import android.content.Intent
-import android.net.Uri
-import android.renderscript.ScriptGroup
-import android.util.Base64
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.provider.MediaStore
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.activity.result.PickVisualMediaRequest
-import java.io.InputStream
+import androidx.activity.result.registerForActivityResult
+import com.bignerdranch.android.activity_coordinator.UserSession.currentUserId
+import com.google.firebase.storage.*
+import java.io.ByteArrayOutputStream
 
 
 class ProfileActivity : AppCompatActivity() {
@@ -37,60 +39,10 @@ class ProfileActivity : AppCompatActivity() {
             finish() //Closes ProfileActivity
         }
 
-        // ======================================================================================= //
-        // The following code is boilerplate from Firebase to test that firestore is set up correctly.
+        val storage = Firebase.storage // Firebase cloud storage, where all picture assets live
         val db = Firebase.firestore
         val TAG = "ProfileActivity"
-        /*
-        // Create a new user with a first and last name
-        val user = hashMapOf(
-            "first" to "Ada",
-            "last" to "Lovelace",
-            "born" to 1815,
-        )
 
-        // Add a new document with a generated ID
-        db.collection("users")
-            .add(user)
-            .addOnSuccessListener { documentReference ->
-                Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
-            }
-            .addOnFailureListener { e ->
-                Log.w(TAG, "Error adding document", e)
-            }
-
-        // Create a new user with a first, middle, and last name
-        val user2 = hashMapOf(
-            "first" to "Alan",
-            "middle" to "Mathison",
-            "last" to "Turing",
-            "born" to 1912,
-        )
-
-        // Add a new document with a generated ID
-        db.collection("users")
-            .add(user2)
-            .addOnSuccessListener { documentReference ->
-                Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
-            }
-            .addOnFailureListener { e ->
-                Log.w(TAG, "Error adding document", e)
-            }
-
-        db.collection("users")
-            .get()
-            .addOnSuccessListener { result ->
-                for (document in result) {
-                    Log.d(TAG, "${document.id} => ${document.data}")
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.w(TAG, "Error getting documents.", exception)
-            }
-
-         */
-        // ======================================================================================= //
-//Branden
         // Hardcoded example user - to be replaced with currently logged-in user
         val user = hashMapOf(
             "uid" to 1,
@@ -99,10 +51,10 @@ class ProfileActivity : AppCompatActivity() {
             "categories"  to "music,hiking,disc golf"
         )
 
-        var profilePicEncoded = ""
+
 
         // Check if user with given UID exists in the database and if not, add them
-        db.collection("users")
+        /*db.collection("users")
             .where(Filter.equalTo("uid", user["uid"]))
             .get()
             .addOnSuccessListener { querySnapshot ->
@@ -118,8 +70,8 @@ class ProfileActivity : AppCompatActivity() {
                 } else {
                     Log.d(TAG, "User with UID ${user["uid"]} already exists")
                 }
-            }
-//Branden ^
+            }*/
+
         //List of all editable profile text fields
         val editableFields = listOf(
             findViewById<EditText>(R.id.profileName),
@@ -127,6 +79,18 @@ class ProfileActivity : AppCompatActivity() {
             findViewById<EditText>(R.id.profileDescription)
         )
 
+        val avatar = findViewById<Button>(R.id.avatar_1)
+
+        // Branden
+        val pfp = findViewById<ImageView>(R.id.pfp) // Profile picture view
+        // The user's profile picture is stored as a jpg named their uid.
+        val pfpRef = UserSession.storage.reference.child(
+            "userProfilePictures/$currentUserId.jpg")
+        // current profile picture will be stored as a bitmap in usersession
+        pfp.setImageBitmap(UserSession.pfp)
+
+        var changedPfp = false // Flag for whether we should upload the profile pic when saving
+        // ^ Branden
 
         val editButton = findViewById<Button>(R.id.edit_profile_button)
         var isEditing = false //Tells EditViews how they should look based on activity state
@@ -140,10 +104,22 @@ class ProfileActivity : AppCompatActivity() {
                 if (!editing) field.clearFocus() //Hides edit bar drawable
             }
             editButton.text = if (editing) "Save" else "Edit"
+            // TODO: Should probably have something that indicates you can edit the profile pic
         }
 
         //applyEditState is run ONCE at start of program to hide EditView bars in initial non-edit state
         applyEditState(false)
+
+        // Converts the current onscreen profile picture to a square bitmap of given size in pixels.
+        // To be used to ready a profile picture for uploading and rescaling uploaded images.
+        // - Branden
+        fun getProfilePictureAsBitmap(imageSize: Int = UserSession.MAX_PFP_SIZE): Bitmap {
+            val bitmap = (pfp.drawable as BitmapDrawable).bitmap
+            // Size of image in bytes is at most imageSize squared plus ~35 bytes overhead
+            // With imageSize = 200, size is at most about 40kb (usually less due to JPEG compression)
+            val bitmapScaled = Bitmap.createScaledBitmap(bitmap, imageSize, imageSize, true)
+            return bitmapScaled
+        }
 
         //Edit mode button for profile page
         editButton.setOnClickListener {
@@ -153,7 +129,27 @@ class ProfileActivity : AppCompatActivity() {
                 Log.d(TAG, (findViewById<EditText>(R.id.profileName).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileLocation).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileDescription).text).toString())
-                Log.d(TAG, profilePicEncoded)
+
+                // The following code only runs if the profile picture was changed
+                // - Branden
+                if (changedPfp) {
+                    // Upload picture to storage as "[user id].jpg"
+                    val bitmapScaled = getProfilePictureAsBitmap()
+                    val baos = ByteArrayOutputStream()
+                    bitmapScaled.compress(
+                        Bitmap.CompressFormat.JPEG, 100, baos)
+                    val data = baos.toByteArray()
+                    Log.d(TAG, "Selected photo is ${data.size} bytes")
+                    // Save to a jpg file in storage named the user's uid
+                    val uploadTask = pfpRef.putBytes(data)
+                    uploadTask.addOnFailureListener { e ->
+                        Log.w(TAG, "Upload failed", e)
+                    }.addOnSuccessListener { taskSnapshot ->
+                        Log.d(TAG, "Upload successful: $taskSnapshot")
+                    }
+
+                    changedPfp = false // reset flag
+                }
 
                 // Update the database with the new profile information.
                 db.collection("users")
@@ -179,6 +175,7 @@ class ProfileActivity : AppCompatActivity() {
                     }
                 }
             }
+
         findViewById<LinearLayout>(R.id.nav_filter).setOnClickListener {
             startActivity(Intent(this, FilterActivity::class.java))
         }
@@ -186,28 +183,39 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(Intent(this, FriendSearchActivity::class.java))
         }
 
-        val avatar = findViewById<Button>(R.id.avatar_1)
-        // Actual code that handles selecting an image from images
-        // and applying it to the profile picture
+        // Handles selecting an image from images and applying it to the profile picture.
         val pickMedia = registerForActivityResult(
             ActivityResultContracts.PickVisualMedia()) { uri ->
             // Callback is invoked after the user selects a media item or closes the
             // photo picker.
             if (uri != null) {
                 Log.d("PhotoPicker", "Selected URI: $uri")
-                val imageStream = contentResolver.openInputStream(uri)
-                val pfp = findViewById<ImageView>(R.id.pfp)
                 pfp.setImageURI(uri)
-                if (imageStream!!.available() > 0) {
-                    val b = ByteArray(imageStream.available())
-                    imageStream.read(b)
-                    profilePicEncoded = Base64.encode(b, 0).decodeToString()
-                    Log.d(TAG, profilePicEncoded.encodeToByteArray().size.toString())
-                }
-                imageStream.close()
+                // pfp currently scales selected photo down but does not
+                // adjust aspect ratio, cropping photo if it doesn't fit perfectly
+
+                val bitmapScaled = getProfilePictureAsBitmap()
+                // Use the scaled bitmap as the profile picture
+                pfp.setImageBitmap(bitmapScaled)
+
+                changedPfp = true // set flag
 
             } else {
                 Log.d("PhotoPicker", "No media selected")
+            }
+        }
+
+        val useCamera = registerForActivityResult(
+            ActivityResultContracts.TakePicturePreview()) { bitmap ->
+            if (bitmap != null) {
+                Log.d("Camera", "Bitmap photo captured")
+                val bitmapScaled = Bitmap.createScaledBitmap(
+                    bitmap, UserSession.MAX_PFP_SIZE, UserSession.MAX_PFP_SIZE, true)
+                pfp.setImageBitmap(bitmapScaled)
+
+                changedPfp = true
+            } else {
+                Log.d("Camera", "No photo taken")
             }
         }
 
@@ -229,7 +237,8 @@ class ProfileActivity : AppCompatActivity() {
                         )
                     }
                     .setPositiveButton("Camera") { dialog, which ->
-                        dialog.cancel() // Ough
+                        // Launch the camera.
+                        useCamera.launch(null)
                     }
                     .setNeutralButton("Cancel") { dialog, which ->
                         dialog.cancel()

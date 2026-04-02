@@ -63,6 +63,7 @@ class MainActivity : AppCompatActivity() {
                         if (dbPassword == passwordInput) {  //Passwords match, user may login
                             val loggedInId = document.id
                             UserSession.currentUserId = loggedInId //Logged in user saved globally to prevent issues
+                            UserSession.getUserPfp() // Load profile picture - Branden
                             val intent = Intent(this, FilterActivity::class.java)
                             intent.putExtra("USER_ID", loggedInId) //Sent to FilterActivity to display correct friends list on boot
 
