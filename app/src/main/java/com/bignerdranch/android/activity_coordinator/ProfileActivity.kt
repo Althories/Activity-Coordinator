@@ -153,7 +153,7 @@ class ProfileActivity : AppCompatActivity() {
                         Log.w(TAG, "Upload failed", e)
                     }.addOnSuccessListener { taskSnapshot ->
                         Log.d(TAG, "Upload successful: $taskSnapshot")
-                        UserSession.getUserPfp() // update profile picture for this session
+                        UserSession.pfp = bitmapScaled // Update the current session's profile picture
                     }
 
                     changedPfp = false // reset flag
