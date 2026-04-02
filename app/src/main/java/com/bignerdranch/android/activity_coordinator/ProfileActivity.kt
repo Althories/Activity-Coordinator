@@ -153,6 +153,7 @@ class ProfileActivity : AppCompatActivity() {
                         Log.w(TAG, "Upload failed", e)
                     }.addOnSuccessListener { taskSnapshot ->
                         Log.d(TAG, "Upload successful: $taskSnapshot")
+                        UserSession.getUserPfp() // update profile picture for this session
                     }
 
                     changedPfp = false // reset flag
@@ -272,7 +273,7 @@ class ProfileActivity : AppCompatActivity() {
                 findViewById<EditText>(R.id.profileLocation).setText(returnable[1])
                 findViewById<EditText>(R.id.profileDescription).setText(returnable[2])
                 Log.w(TAG, "This is the last thing before the crash")
-                findViewById<EditText>(R.id.avatar1).setText(returnable[0].split(" ").take(2).joinToString(""){ it.first().uppercase() } )
+                findViewById<Button>(R.id.avatar_1).setText(returnable[0].split(" ").take(2).joinToString(""){ it.first().uppercase() } )
 
                 Log.w(TAG, "We have docs")
             }
