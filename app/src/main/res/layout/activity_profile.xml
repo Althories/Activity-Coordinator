@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/filter"
     android:layout_width="match_parent"
@@ -100,16 +101,43 @@
                     android:layout_marginBottom="0dp">
 
                     <!-- Avatar circle -->
-                    <TextView
-                        android:id="@+id/avatar_1"
+                    <FrameLayout
                         android:layout_width="52dp"
-                        android:layout_height="52dp"
-                        android:gravity="center"
-                        android:textColor="#FFFFFF"
-                        android:textSize="17dp"
-                        android:textStyle="bold"
-                        android:background="#FF5C5C"
-                        android:text="CP" />
+                        android:layout_height="52dp" >
+                        <Button
+                            android:id="@+id/avatar_1"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#FF5C5C"
+                            android:gravity="center"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:text="CP"
+                            android:textColor="#FFFFFF"
+                            android:textSize="17dp"
+                            android:textStyle="bold"
+                            android:padding="0dp"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            app:iconPadding="0dp" />
+                        <!--
+                        Contains the actual profile picture
+                        Invisible (no background) if pfp doesnt exist
+                        - Branden
+                        -->
+                        <ImageView
+                            android:id="@+id/pfp"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#0000"
+                            android:src="#0000"
+                            android:scaleType="centerCrop"
+                            android:gravity="center"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:padding="0dp"
+                            app:iconPadding="0dp" />
+                    </FrameLayout>
 
                     <!-- Name + distance -->
                     <LinearLayout

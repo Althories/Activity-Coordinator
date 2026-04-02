@@ -1,5 +1,6 @@
 package com.bignerdranch.android.activity_coordinator
 
+import android.content.ContentResolver
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -9,7 +10,15 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.firestore
 import android.content.Intent
+import android.net.Uri
+import android.renderscript.ScriptGroup
+import android.util.Base64
+import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.activity.result.PickVisualMediaRequest
+import java.io.InputStream
 
 
 class ProfileActivity : AppCompatActivity() {
@@ -90,6 +99,8 @@ class ProfileActivity : AppCompatActivity() {
             "categories"  to "music,hiking,disc golf"
         )
 
+        var profilePicEncoded = ""
+
         // Check if user with given UID exists in the database and if not, add them
         db.collection("users")
             .where(Filter.equalTo("uid", user["uid"]))
@@ -142,6 +153,7 @@ class ProfileActivity : AppCompatActivity() {
                 Log.d(TAG, (findViewById<EditText>(R.id.profileName).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileLocation).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileDescription).text).toString())
+                Log.d(TAG, profilePicEncoded)
 
                 // Update the database with the new profile information.
                 db.collection("users")
@@ -172,6 +184,60 @@ class ProfileActivity : AppCompatActivity() {
         }
         findViewById<LinearLayout>(R.id.nav_search).setOnClickListener {
             startActivity(Intent(this, FriendSearchActivity::class.java))
+        }
+
+        val avatar = findViewById<Button>(R.id.avatar_1)
+        // Actual code that handles selecting an image from images
+        // and applying it to the profile picture
+        val pickMedia = registerForActivityResult(
+            ActivityResultContracts.PickVisualMedia()) { uri ->
+            // Callback is invoked after the user selects a media item or closes the
+            // photo picker.
+            if (uri != null) {
+                Log.d("PhotoPicker", "Selected URI: $uri")
+                val imageStream = contentResolver.openInputStream(uri)
+                val pfp = findViewById<ImageView>(R.id.pfp)
+                pfp.setImageURI(uri)
+                if (imageStream!!.available() > 0) {
+                    val b = ByteArray(imageStream.available())
+                    imageStream.read(b)
+                    profilePicEncoded = Base64.encode(b, 0).decodeToString()
+                    Log.d(TAG, profilePicEncoded.encodeToByteArray().size.toString())
+                }
+                imageStream.close()
+
+            } else {
+                Log.d("PhotoPicker", "No media selected")
+            }
+        }
+
+        // Upon clicking on the profile picture
+        avatar.setOnClickListener {
+            if (isEditing) { // Only allow editing in edit mode
+
+                // Make a popup that prompts user to select or take a photo
+                // Currently just uses an alert, we should probably make custom UI
+                val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+                builder
+                    .setMessage("Update profile picture from:")
+                    .setNegativeButton("Photos") { dialog, which ->
+                        // Launch the photo picker and let the user choose only images.
+                        pickMedia.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    }
+                    .setPositiveButton("Camera") { dialog, which ->
+                        dialog.cancel() // Ough
+                    }
+                    .setNeutralButton("Cancel") { dialog, which ->
+                        dialog.cancel()
+                    }
+
+                val dialog: AlertDialog = builder.create()
+                dialog.show()
+            }
         }
         }
 }
