@@ -112,7 +112,7 @@
                             android:gravity="center"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
-                            android:text="CP"
+                            android:text="XD"
                             android:textColor="#FFFFFF"
                             android:textSize="17dp"
                             android:textStyle="bold"
@@ -159,7 +159,7 @@
                             android:focusableInTouchMode="false"
                             android:hint="Enter name, age..."
                             android:textColorHint="#FFFFFF"
-                            android:text="Cooper Ptacek, 21" />
+                            android:text="Name" />
 
                         <EditText
                             android:id="@+id/profileLocation"
@@ -172,7 +172,7 @@
                             android:focusableInTouchMode="false"
                             android:hint="Enter Location..."
                             android:textColorHint="#8888A4"
-                            android:text="Forest Lake, MN" />
+                            android:text="Enter Location..." />
 
                     </LinearLayout>
                 </LinearLayout>
@@ -191,7 +191,7 @@
                     android:focusableInTouchMode="false"
                     android:hint="Enter bio..."
                     android:textColorHint="#8888A4"
-                    android:text="Statistics and Computer Science Major at Gustavus Adolphus College. Professional Nerd." />
+                    android:text="Enter bio..." />
 
                 <!-- Interest chips -->
                 <LinearLayout

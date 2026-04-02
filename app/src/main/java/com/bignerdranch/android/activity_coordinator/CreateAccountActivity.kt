@@ -32,7 +32,7 @@ class CreateAccountActivity : AppCompatActivity() {
         }
         //on clicking create button do basici verification of info
         btnCreate.setOnClickListener {
-            val email = etEmail.text.toString().trim()
+            val email = etEmail.text.toString().trim().lowercase()
             val password = etPassword.text.toString().trim()
             val name = etName.text.toString().trim()
 
