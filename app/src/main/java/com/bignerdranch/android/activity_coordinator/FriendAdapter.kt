@@ -80,6 +80,7 @@ class FriendAdapter(
         if (isSearchMode) {
             holder.actionButton.visibility = View.VISIBLE
             holder.actionButton.text = "+ Add"
+            holder.actionButton.isEnabled = true //CRITICAL re-enable add button if user intends to add multiple friends in one go
             holder.actionButton.setOnClickListener {
                 onAddClick?.invoke(friend)
                 holder.actionButton.text = "✓ Added"
