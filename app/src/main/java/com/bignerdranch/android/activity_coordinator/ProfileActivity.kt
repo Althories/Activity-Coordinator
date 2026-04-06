@@ -92,9 +92,9 @@ class ProfileActivity : AppCompatActivity() {
         val pfp = findViewById<ImageView>(R.id.pfp) // Profile picture view
         // The user's profile picture is stored as a jpg named their uid.
         val pfpRef = UserSession.storage.reference.child(
-            "userProfilePictures/$currentUserId.jpg")
+            "userProfilePictures/$uid.jpg")
         // current profile picture will be stored as a bitmap in usersession
-        pfp.setImageBitmap(UserSession.pfp)
+        pfp.setImageBitmap(UserSession.getPfp())
 
         var changedPfp = false // Flag for whether we should upload the profile pic when saving
         // ^ Branden
@@ -153,7 +153,7 @@ class ProfileActivity : AppCompatActivity() {
                         Log.w(TAG, "Upload failed", e)
                     }.addOnSuccessListener { taskSnapshot ->
                         Log.d(TAG, "Upload successful: $taskSnapshot")
-                        UserSession.pfp = bitmapScaled // Update the current session's profile picture
+                        UserSession.updatePfpLocally(bitmapScaled) // Update the current session's profile picture
                     }
 
                     changedPfp = false // reset flag
