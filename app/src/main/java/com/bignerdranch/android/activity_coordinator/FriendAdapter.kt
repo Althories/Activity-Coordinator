@@ -9,8 +9,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.firestore.auth.User
-import kotlinx.coroutines.android.awaitFrame
 
 
 //Class manager. Bridges the gap between the raw Friend data and the RecyclerView UI, coordinates creation and recycling of profile cards.

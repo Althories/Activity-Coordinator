@@ -11,17 +11,13 @@ import com.google.firebase.firestore.firestore
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.provider.MediaStore
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.registerForActivityResult
-import com.bignerdranch.android.activity_coordinator.UserSession.currentUserId
 import com.google.firebase.storage.*
 import java.io.ByteArrayOutputStream
-import kotlinx.coroutines.*
 import kotlin.collections.joinToString
 import kotlin.collections.take
 import kotlin.text.split
