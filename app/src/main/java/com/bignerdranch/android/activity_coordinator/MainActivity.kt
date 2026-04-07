@@ -12,7 +12,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.activity.enableEdgeToEdge
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.auth.User
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,7 +36,15 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, CreateAccountActivity::class.java))
         }
 
-        UserSession.updateUserPfps() // Load every profile picture
+        // Get EVERY user's profile picture.
+        // Downloads every single user's profile picture if it isn't already downloaded,
+        // so not ideal. But FriendAdapter already loads all friends, so.
+        db.collection("users").get()
+            .addOnSuccessListener { allDocs ->
+                for (doc in allDocs) {
+                    UserSession.getPfp(doc.id)
+                }
+            }
 
         btnLogin.setOnClickListener {
             val emailInput = emailField.text.toString().trim().lowercase()
