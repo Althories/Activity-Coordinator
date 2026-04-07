@@ -51,7 +51,7 @@ object UserSession {
                     }
                     Log.d("UserSession", "Loaded $uidToFetch.jpg")
                 }.addOnFailureListener { e ->
-                    Log.w("UserSession", "Failed to fetch profile pic", e)
+                    Log.w("UserSession", "Failed to fetch $uidToFetch.jpg")//, e)
                 }
             return returnedPfp
         }
