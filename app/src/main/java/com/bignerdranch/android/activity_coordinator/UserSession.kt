@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
 
 //Variables in this file stay alive as long as the app process is running
@@ -17,7 +18,8 @@ object UserSession {
 
     const val MAX_PFP_SIZE = 200
     val storage = Firebase.storage // Firebase cloud storage, where all picture assets live
-    
+    val db = Firebase.firestore
+
     // Returns a given user's profile picture as bitmap. If it isn't saved, download it.
     // Defaults to the currently logged in user.
     fun getPfp(uid: String? = null): Bitmap? {
@@ -47,6 +49,7 @@ object UserSession {
                     if (returnedPfp != null) {
                         loadedPfps[uidToFetch] = returnedPfp
                     }
+                    Log.d("UserSession", "Loaded $uidToFetch.jpg")
                 }.addOnFailureListener { e ->
                     Log.w("UserSession", "Failed to fetch profile pic", e)
                 }
@@ -61,6 +64,18 @@ object UserSession {
             loadedPfps[currentUserId!!.toInt()] = img
         } else {
             loadedPfps[uid.toInt()] = img
+        }
+    }
+
+    // Update EVERY user's profile picture.
+    // Downloads every single user's profile picture if it isn't already downloaded,
+    // so not ideal. But FriendAdapter already does this.
+    fun updateUserPfps() {
+        db.collection("users").get()
+        .addOnSuccessListener { allDocs ->
+            for (doc in allDocs) {
+                getPfp(doc.id)
+            }
         }
     }
 }

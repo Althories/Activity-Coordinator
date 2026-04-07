@@ -12,6 +12,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.activity.enableEdgeToEdge
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.auth.User
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,6 +36,8 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btn_create_account).setOnClickListener {
             startActivity(Intent(this, CreateAccountActivity::class.java))
         }
+
+        UserSession.updateUserPfps() // Load every profile picture
 
         btnLogin.setOnClickListener {
             val emailInput = emailField.text.toString().trim().lowercase()

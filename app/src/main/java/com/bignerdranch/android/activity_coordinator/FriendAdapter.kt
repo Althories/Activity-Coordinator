@@ -95,7 +95,6 @@ class FriendAdapter(
         }
 
         // Set friend profile picture
-        
         holder.pfp.setImageBitmap(UserSession.getPfp(friend.id))
     }
 
