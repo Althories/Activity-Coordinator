@@ -22,6 +22,7 @@ import com.bignerdranch.android.activity_coordinator.UserSession.currentUserId
 import com.google.firebase.storage.*
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.*
+import java.util.Locale
 import kotlin.collections.joinToString
 import kotlin.collections.take
 import kotlin.text.split
@@ -36,6 +37,7 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(R.layout.activity_profile)
         val temp = getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription"))
         Log.w("BHBDUIBHDIKBJ", temp.toString())
+        val returned = csvToText("merge_dragons,cats,morger,music")
         findViewById<Button>(R.id.btn_logout).setOnClickListener {
             // Clear the user session
             UserSession.currentUserId = null
@@ -83,7 +85,9 @@ class ProfileActivity : AppCompatActivity() {
         val editableFields = listOf(
             findViewById<EditText>(R.id.profileName),
             findViewById<EditText>(R.id.profileLocation),
-            findViewById<EditText>(R.id.profileDescription)
+            findViewById<EditText>(R.id.profileDescription),
+            findViewById<EditText>(R.id.profileCats)
+
         )
 
         val avatar = findViewById<Button>(R.id.avatar_1)
@@ -170,7 +174,8 @@ class ProfileActivity : AppCompatActivity() {
                         db.document("users/$uid")
                             .update("profileName", (findViewById<EditText>(R.id.profileName).text).toString(),
                                 "profileLocation", (findViewById<EditText>(R.id.profileLocation).text).toString(),
-                                "profileDescription", (findViewById<EditText>(R.id.profileDescription).text).toString())
+                                "profileDescription", (findViewById<EditText>(R.id.profileDescription).text).toString(),
+                                "categories", textToArray((findViewById<EditText>(R.id.profileCats).text).toString()))
                             .addOnSuccessListener {
                                 Log.d(TAG, "Document at users/$uid.id} successfully updated.")
                             }
@@ -284,5 +289,30 @@ class ProfileActivity : AppCompatActivity() {
 
 
     }
+    fun String.capitalizeWords(): String =
+        split(" ").joinToString(" ") { word ->
+            word.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase() else it.toString()
+            }
+        }
+    fun csvToText(sampleText : String, backward : Boolean = false): String {
+        var returnable = ""
+        if(backward) {
+            returnable = sampleText.replace(",", ", ").replace("_", " ").capitalizeWords()
+            findViewById<EditText>(R.id.profileCats).setText(returnable)
+        }
+
+            else  returnable = sampleText.replace(", ",",").replace(" ","_").lowercase()
+
+
+        return returnable
+    }
+    fun textToArray(sampleText : String): Array<String> {
+        var returnable = sampleText.lowercase().split(",").toTypedArray()
+        for ( i in returnable.indices)
+            returnable[i] = returnable[i].trim().replace(" ","_")
+        return returnable
+    }
+
 
 }

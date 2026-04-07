@@ -240,6 +240,13 @@
 
                 </LinearLayout>
             </LinearLayout>
+            <EditText
+                android:id="@+id/profileCats"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColor="#8888A4"
+                android:textSize="11dp"
+                android:text="Categories" />
         </LinearLayout>
     </LinearLayout>
 
