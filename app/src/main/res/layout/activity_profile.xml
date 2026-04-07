@@ -199,11 +199,12 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <TextView
+                    <EditText
+                        android:id="@+id/chip1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="7dp"
-                        android:text="Music"
+                        android:text=""
                         android:textColor="#8888A4"
                         android:textSize="11sp"
                         android:textStyle="bold"
@@ -213,11 +214,12 @@
                         android:paddingBottom="5dp"
                         android:background="#0D0D14"/>
 
-                    <TextView
+                    <EditText
+                        android:id="@+id/chip2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="7dp"
-                        android:text="Hiking"
+                        android:text=""
                         android:textColor="#8888A4"
                         android:textSize="11dp"
                         android:paddingStart="9dp"
@@ -226,10 +228,11 @@
                         android:paddingBottom="5dp"
                         android:background="#0D0D14"/>
 
-                    <TextView
+                    <EditText
+                        android:id="@+id/chip3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Disc Golf"
+                        android:text=""
                         android:textColor="#8888A4"
                         android:textSize="11dp"
                         android:paddingStart="9dp"
@@ -240,18 +243,223 @@
 
                 </LinearLayout>
             </LinearLayout>
-            <EditText
-                android:id="@+id/profileCats"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textColor="#8888A4"
-                android:textSize="11dp"
-                android:text="Categories" />
+
         </LinearLayout>
     </LinearLayout>
 
-    <include
-        layout="@layout/nav_bar"
+
+    <LinearLayout
+        android:id="@+id/bottom_sheet"
         android:layout_width="match_parent"
-        android:layout_height="60dp" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#1C1C28"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="1dp"
+        android:paddingBottom="1dp"
+        android:translationY="0dp"
+        android:elevation="16dp"
+        android:visibility="gone">
+
+        <!-- Sheet drag handle -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="20dp"
+            android:background="#30FFFFFF" />
+
+        <!-- Sheet title row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Choose Interest"
+                android:textColor="#E8E8F0"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btn_clear_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Clear all"
+                android:textColor="#FF5C5C"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="20dp"
+            android:text="Show people you are interested in these"
+            android:textColor="#8888A4"
+            android:textSize="13sp" />
+
+        <!-- Interest filter chips, row 1 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:id="@+id/chip_music"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:text="Music"
+                android:textColor="#8888A4"
+                android:textSize="13dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:background="#16161F"/>
+
+            <TextView
+                android:id="@+id/chip_hiking"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:text="Hiking"
+                android:textColor="#8888A4"
+                android:textSize="13dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:background="#16161F"/>
+
+            <TextView
+                android:id="@+id/chip_cooking"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cooking"
+                android:textColor="#8888A4"
+                android:textSize="13dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:background="#16161F"/>
+
+        </LinearLayout>
+
+        <!-- Interest filter chips, row 2 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:id="@+id/chip_gaming"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:text="Gaming"
+                android:textColor="#8888A4"
+                android:textSize="13dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:background="#16161F"/>
+
+            <TextView
+                android:id="@+id/chip_reading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:text="Reading"
+                android:textColor="#8888A4"
+                android:textSize="13sp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:background="#16161F"/>
+
+            <TextView
+                android:id="@+id/chip_travel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Travel"
+                android:textColor="#8888A4"
+                android:textSize="13sp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:background="#16161F"/>
+
+        </LinearLayout>
+
+        <!-- Interest filter chips, row 3 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:id="@+id/chip_merge_dragons"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:text="Merge Dragons"
+                android:textColor="#8888A4"
+                android:textSize="13dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:background="#16161F"/>
+
+            <TextView
+                android:id="@+id/chip_coding"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:text="Coding"
+                android:textColor="#8888A4"
+                android:textSize="13dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:background="#16161F"/>
+
+            <TextView
+                android:id="@+id/chip_disc_golf"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Disc Golf"
+                android:textColor="#8888A4"
+                android:textSize="13sp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:background="#16161F"/>
+
+        </LinearLayout>
+    </LinearLayout>
+        <include
+            layout="@layout/nav_bar"
+            android:layout_width="match_parent"
+            android:layout_height="60dp" />
 </LinearLayout>
