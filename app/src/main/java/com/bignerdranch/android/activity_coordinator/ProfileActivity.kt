@@ -94,7 +94,7 @@ class ProfileActivity : AppCompatActivity() {
         val editableFields = listOf(
             findViewById<EditText>(R.id.profileName),
             findViewById<EditText>(R.id.profileLocation),
-            findViewById<EditText>(R.id.profileDescription),
+            findViewById<EditText>(R.id.profileDescription)
 
 
         )
