@@ -105,6 +105,7 @@ class CreateAccountActivity : AppCompatActivity() {
                                     Log.d(TAG, "New user created with document ID: $nextUid")
                                     // Store the numeric ID string in UserSession
                                     UserSession.currentUserId = nextUid.toString()
+                                    UserSession.fetchCategories(db)
                                     // Update the globals doc with the new UID in the list
                                     db.collection("globals")
                                         .document("7Us0uNh9dpMsg2vyaPLW")

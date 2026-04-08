@@ -26,7 +26,6 @@ import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.*
 import java.util.Locale
 import com.google.firebase.storage.*
-import java.io.ByteArrayOutputStream
 import kotlin.collections.joinToString
 import kotlin.collections.take
 import kotlin.text.split
@@ -46,7 +45,11 @@ class ProfileActivity : AppCompatActivity() {
 
         getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription"))
 
-        getCats(uid.toString())
+        UserSession.fetchCategories(db) {
+            runOnUiThread {
+                getCats(uid.toString())
+            }
+        }
         ///                            Log.w("BHBDUIBHDIKBJ", temp.toString())
         ////                           val returned = csvToText("merge_dragons,cats,morger,music")
         findViewById<Button>(R.id.btn_logout).setOnClickListener {
@@ -122,10 +125,12 @@ class ProfileActivity : AppCompatActivity() {
             editableFields.forEach { field ->
                 field.isFocusableInTouchMode = editing
                 field.isFocusable = editing
-                field.background.alpha = if (editing) 255 else 0 //Determines edit drawable visibility
-                if (!editing) field.clearFocus() //Hides edit bar drawable
+                field.background.alpha = if (editing) 255 else 0
+                if (!editing) field.clearFocus()
             }
-            findViewById<LinearLayout>(R.id.bottom_sheet).visibility = if (editing) android.view.View.VISIBLE else android.view.View.GONE
+            findViewById<LinearLayout>(R.id.interest_picker_section).visibility =
+                if (editing) android.view.View.VISIBLE else android.view.View.GONE
+            findViewById<LinearLayout>(R.id.bottom_sheet).visibility = android.view.View.GONE
             editButton.text = if (editing) "Save" else "Edit"
             // TODO: Should probably have something that indicates you can edit the profile pic
         }
@@ -152,31 +157,7 @@ class ProfileActivity : AppCompatActivity() {
                 Log.d(TAG, (findViewById<EditText>(R.id.profileName).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileLocation).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileDescription).text).toString())
-                var temp = 0
-                findViewById<EditText>(R.id.chip1).setText("")
-                findViewById<EditText>(R.id.chip2).setText("")
-                findViewById<EditText>(R.id.chip3).setText("")
-                findViewById<EditText>(R.id.chip3).visibility = android.view.View.GONE
-                findViewById<EditText>(R.id.chip2).visibility = android.view.View.GONE
-                findViewById<EditText>(R.id.chip1).visibility = android.view.View.GONE
-
-                for(x in chosenCats) {  //TODO End Hardcoding
-                    if (temp == 2 && x != "") {
-                        findViewById<EditText>(R.id.chip3).setText(x)
-                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
-                        temp += 1
-                    }
-                    if (temp == 1 && x != "") {
-                        findViewById<EditText>(R.id.chip2).setText(x)
-                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
-                        temp += 1
-                    }
-                    if (temp == 0 && x != "") {
-                        findViewById<EditText>(R.id.chip1).setText(x)
-                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
-                        temp += 1
-                    }
-                }
+                refreshDisplayChips()
 
                 // The following code only runs if the profile picture was changed
                 // - Branden
@@ -218,11 +199,13 @@ class ProfileActivity : AppCompatActivity() {
                             .addOnFailureListener { e ->
                                 Log.w(TAG, "Error updating document", e)
                             }
-                        db.document("users/$uid").update("categories", FieldValue.delete())   //This is bad Cod TODO Fix this crap
-                       if(!chosenCats.isEmpty()) {for (cat in chosenCats)
-                        db.document("users/$uid").update("categories", FieldValue.arrayUnion(cat))
-
-                    }}
+                        db.document("users/$uid").update("categories", chosenCats.toList())
+                            .addOnSuccessListener {
+                                Log.d(TAG, "Categories saved: $chosenCats")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w(TAG, "Error saving categories", e)
+                            }}
                     .addOnFailureListener { e ->
                         Log.w(TAG, "Error finding document", e)
                     }
@@ -336,86 +319,149 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
 
-    fun getCats(uid : String){
+    fun getCats(uid: String) {
         db.collection("users").document(uid).get()
             .addOnSuccessListener { userDoc ->
-
                 var stringCats = userDoc.get("categories").toString()
-                stringCats = stringCats.removeSurrounding("[","]")
+                stringCats = stringCats.removeSurrounding("[", "]")
                 val tempCats = stringCats.split(", ")
                 for (x in tempCats) {
-                    Log.w(TAG+" getCats",x)
-                    if(x !in chosenCats) chosenCats.add(x)
-                }
-                var temp = 0
-                findViewById<EditText>(R.id.chip3).visibility = android.view.View.GONE
-                findViewById<EditText>(R.id.chip2).visibility = android.view.View.GONE
-                findViewById<EditText>(R.id.chip1).visibility = android.view.View.GONE
-                for(x in chosenCats) {  //TODO end hardcoding
-                    if (temp == 2 && x != "") {
-                        findViewById<EditText>(R.id.chip3).setText(x)
-                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
-                        temp += 1
-                    }
-                    if (temp == 1 && x != "") {
-                        findViewById<EditText>(R.id.chip2).setText(x)
-                        findViewById<EditText>(R.id.chip2).visibility = android.view.View.VISIBLE
-                        temp += 1
-                    }
-                    if (temp == 0 && x != "") {
-                        findViewById<EditText>(R.id.chip1).setText(x)
-                        findViewById<EditText>(R.id.chip1).visibility = android.view.View.VISIBLE
-                        temp += 1
-                    }
+                    Log.w(TAG + " getCats", x)
+                    if (x.isNotEmpty() && x !in chosenCats) chosenCats.add(x)
                 }
                 Log.w(TAG, "We have docs $stringCats")
                 setupChips()
+                refreshDisplayChips()
             }
     }
+    private fun refreshDisplayChips() {
+        val container = findViewById<LinearLayout>(R.id.profile_chips_display)
+        container.removeAllViews()
+        val dp = resources.displayMetrics.density
+        val screenWidth = resources.displayMetrics.widthPixels
+        val horizontalPadding = (64 * dp).toInt()
 
+        var currentRow: LinearLayout? = null
+        var currentRowWidth = 0
+
+        chosenCats.filter { it.isNotEmpty() && it != "null" }.forEach { label ->
+            val chip = TextView(this)
+            chip.text = label.replaceFirstChar { it.uppercase() }
+            chip.setTextColor(Color.parseColor("#8888A4"))
+            chip.textSize = 11f
+            chip.maxLines = 1
+            chip.isSingleLine = true
+            chip.setBackgroundColor(Color.parseColor("#0D0D14"))
+            val px9 = (9 * dp).toInt(); val px5 = (5 * dp).toInt()
+            chip.setPadding(px9, px5, px9, px5)
+
+            // Set layout params BEFORE measuring
+            val chipLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            chipLp.marginEnd = (7 * dp).toInt()
+            chip.layoutParams = chipLp
+
+            // Use AT_MOST so measuredWidth returns the actual rendered width
+            chip.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(screenWidth, android.view.View.MeasureSpec.AT_MOST),
+                android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED)
+            )
+            val chipWidth = chip.measuredWidth + chipLp.marginEnd
+
+            if (currentRow == null || currentRowWidth + chipWidth > screenWidth - horizontalPadding) {
+                currentRow = LinearLayout(this)
+                currentRow!!.orientation = LinearLayout.HORIZONTAL
+                val rowLp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                rowLp.bottomMargin = (4 * dp).toInt()
+                currentRow!!.layoutParams = rowLp
+                container.addView(currentRow)
+                currentRowWidth = 0
+            }
+
+            currentRow!!.addView(chip)
+            currentRowWidth += chipWidth
+        }
+    }
     private fun setupChips() {
-        // Maps each chip's view ID to the interest label it represents
-        val chips = mapOf(
-            R.id.chip_music   to "Music",
-            R.id.chip_hiking  to "Hiking",
-            R.id.chip_cooking to "Cooking",
-            R.id.chip_gaming  to "Gaming",
-            R.id.chip_reading to "Reading",
-            R.id.chip_travel  to "Travel",
-            R.id.chip_merge_dragons    to "Merge Dragons",
-            R.id.chip_coding  to "Coding",
-            R.id.chip_disc_golf to "Disc Golf"
-        )
+        val container = findViewById<LinearLayout>(R.id.profile_chip_container)
+        container.removeAllViews()
 
+        val categories = UserSession.allCategories.ifEmpty {
+            listOf("movies","music","food","restaurants","games","reading","travel","hiking","disc golf","coding","merge dragons")
+        }
+        val dp = resources.displayMetrics.density
+        val screenWidth = resources.displayMetrics.widthPixels
+        val horizontalPadding = (32 * dp).toInt()
 
-        // Loop through every chip and attach a click listener to each one
-        chips.forEach { (chipId, label) ->
-            val chip = findViewById<TextView>(chipId)
-            if (label !in chosenCats) {
-                chip.setTextColor(Color.parseColor("#8888A4"))
-                chip.setBackgroundColor(Color.parseColor("#16161F"))
-            } else {
+        var currentRow: LinearLayout? = null
+        var currentRowWidth = 0
+
+        categories.forEach { label ->
+            val displayLabel = label.replaceFirstChar { it.uppercase() }
+
+            val chip = TextView(this)
+            chip.text = displayLabel
+            chip.textSize = 13f
+            chip.maxLines = 1
+            chip.isSingleLine = true
+            val px14 = (14 * dp).toInt()
+            val px9 = (9 * dp).toInt()
+            chip.setPadding(px14, px9, px14, px9)
+
+            if (label in chosenCats) {
                 chip.setTextColor(Color.parseColor("#2ECC71"))
                 chip.setBackgroundColor(Color.parseColor("#222ECC71"))
+            } else {
+                chip.setTextColor(Color.parseColor("#8888A4"))
+                chip.setBackgroundColor(Color.parseColor("#16161F"))
             }
+
             chip.setOnClickListener {
                 if (label in chosenCats) {
-                    // Already selected, deselect it and reset to gray
                     chosenCats.remove(label)
                     chip.setTextColor(Color.parseColor("#8888A4"))
                     chip.setBackgroundColor(Color.parseColor("#16161F"))
                 } else {
-                    // Not selected — select it and highlight green
                     chosenCats.add(label)
                     chip.setTextColor(Color.parseColor("#2ECC71"))
                     chip.setBackgroundColor(Color.parseColor("#222ECC71"))
                 }
-                // Rebuild the active filter pills row to reflect the new state
-
-
-
-
+                refreshDisplayChips()
             }
+
+            // Set layout params BEFORE measuring
+            val chipLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            chipLp.marginEnd = (10 * dp).toInt()
+            chip.layoutParams = chipLp
+
+            // Measure with AT_MOST so the TextView has a real bound to measure against
+            chip.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(screenWidth, android.view.View.MeasureSpec.AT_MOST),
+                android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED)
+            )
+            val chipWidth = chip.measuredWidth + chipLp.marginEnd
+
+            // Start a new row if this chip won't fit
+            if (currentRow == null || currentRowWidth + chipWidth > screenWidth - horizontalPadding) {
+                currentRow = LinearLayout(this)
+                currentRow!!.orientation = LinearLayout.HORIZONTAL
+                val rowLp = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                rowLp.bottomMargin = (8 * dp).toInt()
+                currentRow!!.layoutParams = rowLp
+                container.addView(currentRow)
+                currentRowWidth = 0
+            }
+
+            currentRow!!.addView(chip)
+            currentRowWidth += chipWidth
         }
     }
 

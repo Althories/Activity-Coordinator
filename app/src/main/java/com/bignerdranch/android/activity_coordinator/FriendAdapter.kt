@@ -48,26 +48,52 @@ class FriendAdapter(
         holder.bio.text = friend.bio
 
         //All of the shit for category chips
-        holder.categoriesContainer.removeAllViews() //Clears the container cache because recyclerview needs to recycle
-        friend.categories.forEach { category -> //Loop through the friend's categories
+        holder.categoriesContainer.removeAllViews()
+        holder.categoriesContainer.orientation = LinearLayout.VERTICAL
+
+        val screenWidth = context.resources.displayMetrics.widthPixels
+        val containerWidth = screenWidth - (64 * dp).toInt() // account for card padding
+        var currentRow: LinearLayout? = null
+        var currentRowWidth = 0
+        var rowCount = 0
+
+        friend.categories.forEach { category ->
             val chip = TextView(context)
-            //XML equivalent applications to be done for each chip
-            chip.text = category
+            chip.text = category.replaceFirstChar { it.uppercase() }
             chip.setTextColor(Color.parseColor("#8888A4"))
             chip.textSize = 11f
+            chip.isSingleLine = true
+            chip.maxLines = 1
             chip.setBackgroundColor(Color.parseColor("#0D0D14"))
-            val paddingSide = (9 * dp).toInt()
-            val paddingTopBottom = (5 * dp).toInt()
-            chip.setPadding(paddingSide, paddingTopBottom, paddingSide, paddingTopBottom)
-            //Spacing between chips
-            val params = LinearLayout.LayoutParams(
+            chip.setPadding((9 * dp).toInt(), (5 * dp).toInt(), (9 * dp).toInt(), (5 * dp).toInt())
+
+            val chipLp = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
-            params.setMargins(0, 0, (7 * dp).toInt(), 0)
-            chip.layoutParams = params
-            //Finish by adding chip to the horizontal layout
-            holder.categoriesContainer.addView(chip)
+            chipLp.marginEnd = (7 * dp).toInt()
+            chip.layoutParams = chipLp
+
+            chip.measure(
+                View.MeasureSpec.makeMeasureSpec(containerWidth, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            val chipWidth = chip.measuredWidth + chipLp.marginEnd
+
+            if (currentRow == null || currentRowWidth + chipWidth > containerWidth) {
+                if (rowCount >= 2) return@forEach
+                currentRow = LinearLayout(context)
+                currentRow!!.orientation = LinearLayout.HORIZONTAL
+                val rowLp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                rowLp.bottomMargin = (4 * dp).toInt()
+                currentRow!!.layoutParams = rowLp
+                holder.categoriesContainer.addView(currentRow)
+                currentRowWidth = 0
+                rowCount++
+            }
+
+            currentRow!!.addView(chip)
+            currentRowWidth += chipWidth
         }
 
         //"Add friend" button tracking for the UI

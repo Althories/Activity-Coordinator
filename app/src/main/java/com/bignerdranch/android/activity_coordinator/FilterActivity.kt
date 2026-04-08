@@ -159,42 +159,51 @@ class FilterActivity : AppCompatActivity() {
     }
 
     private fun setupChips() {
-        // Maps each chip's view ID to the interest label it represents
-        val chips = mapOf(
-            R.id.chip_music   to "Music",
-            R.id.chip_hiking  to "Hiking",
-            R.id.chip_cooking to "Cooking",
-            R.id.chip_gaming  to "Gaming",
-            R.id.chip_reading to "Reading",
-            R.id.chip_travel  to "Travel",
-            R.id.chip_merge_dragons    to "Merge Dragons",
-            R.id.chip_coding  to "Coding",
-            R.id.chip_disc_golf to "Disc Golf"
+        val rows = listOf(
+            findViewById<LinearLayout>(R.id.chip_row_1),
+            findViewById<LinearLayout>(R.id.chip_row_2),
+            findViewById<LinearLayout>(R.id.chip_row_3),
+
+
         )
-        // Loop through every chip and attach a click listener to each one
-        chips.forEach { (chipId, label) ->
-            val chip = findViewById<TextView>(chipId)
+        rows.forEach { it.removeAllViews() }
+
+        val categories = UserSession.allCategories.ifEmpty {
+            listOf("Music","Hiking","Cooking","Gaming","Reading","Travel","Merge Dragons","Coding","Disc Golf")
+        }
+
+        val dp = resources.displayMetrics.density
+
+        categories.forEachIndexed { index, label ->
+            val row = rows[minOf(index / 3, 2)]
+            val chip = TextView(this)
+            chip.text = label.replaceFirstChar { it.uppercase() }
+            chip.setTextColor(Color.parseColor("#8888A4"))
+            chip.setBackgroundColor(Color.parseColor("#16161F"))
+            chip.textSize = 13f
+            val px14 = (14 * dp).toInt(); val px9 = (9 * dp).toInt()
+            chip.setPadding(px14, px9, px14, px9)
+            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            lp.marginEnd = (10 * dp).toInt()
+            chip.layoutParams = lp
+            chip.tag = label // store label as tag so we can find it later
+
             chip.setOnClickListener {
                 if (label in activeFilters) {
-                    // Already selected, deselect it and reset to gray
                     activeFilters.remove(label)
                     chip.setTextColor(Color.parseColor("#8888A4"))
                     chip.setBackgroundColor(Color.parseColor("#16161F"))
                 } else {
-                    // Not selected — select it and highlight green
                     activeFilters.add(label)
                     chip.setTextColor(Color.parseColor("#2ECC71"))
                     chip.setBackgroundColor(Color.parseColor("#222ECC71"))
                 }
-                // Rebuild the active filter pills row to reflect the new state
                 updateActiveFilterRow()
-                // filter apply button is dynamic based on if filters are selected
                 btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
-
             }
+            row.addView(chip)
         }
     }
-
     //Helper function to updateProfile(). Calls friendAdapter to update the UI based on filter results
     private fun displayFriends(friends: List<Friend>) {
         friendAdapter.updateData(friends)
@@ -202,75 +211,56 @@ class FilterActivity : AppCompatActivity() {
     }
 
     private fun updateActiveFilterRow() {
-        // Remove all existing pills before rebuilding the row
         layoutActiveFilters.removeAllViews()
 
         if (activeFilters.isEmpty()) {
-            // No filters active, hide the pill row and reset the subtitle
             scrollActiveFilters.visibility = android.view.View.GONE
             ResultCount.text = "All friends"
             return
         }
 
         scrollActiveFilters.visibility = android.view.View.VISIBLE
-        // Update subtitle to show how many filters are active
         ResultCount.text = "${activeFilters.size} filter${if (activeFilters.size > 1) "s" else ""} active"
 
         val dp = resources.displayMetrics.density
 
         activeFilters.forEach { label ->
             val pill = TextView(this)
-            // Show the label with an X so the user knows they can tap to remove it
-
-            pill.text     = "$label  ⓧ"
+            pill.text = "$label  ⓧ"
             pill.textSize = 12f
             pill.setTypeface(null, Typeface.BOLD)
-            // Style the pill green to match the selected chip color
             pill.setTextColor(Color.parseColor("#2ECC71"))
             pill.setBackgroundColor(Color.parseColor("#222ECC71"))
-            // Add horizontal and vertical padding around the pill text
             pill.setPadding(
                 (10 * dp).toInt(), (6 * dp).toInt(),
                 (10 * dp).toInt(), (6 * dp).toInt()
             )
-
-            val lp = LinearLayout.LayoutParams(
-                // Set layout params with a right margin so pills don't touch each other
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
+            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             lp.marginEnd = (8 * dp).toInt()
             pill.layoutParams = lp
 
-            // tapping a pill removes that filter
             pill.setOnClickListener {
                 activeFilters.remove(label)
-                // also deselect the chip in the sheet
-                val chipId = when (label) {
-                    "Music"   -> R.id.chip_music
-                    "Hiking"  -> R.id.chip_hiking
-                    "Cooking" -> R.id.chip_cooking
-                    "Gaming"  -> R.id.chip_gaming
-                    "Reading" -> R.id.chip_reading
-                    "Travel"  -> R.id.chip_travel
-                    "Merge Dragons" -> R.id.chip_merge_dragons
-                    "Coding"  -> R.id.chip_coding
-                    "Disc Golf" -> R.id.chip_disc_golf
-                    else      -> null
+                // Find the chip by tag and reset its color
+                val rows = listOf(
+                    findViewById<LinearLayout>(R.id.chip_row_1),
+                    findViewById<LinearLayout>(R.id.chip_row_2),
+                    findViewById<LinearLayout>(R.id.chip_row_3)
+                )
+                rows.forEach { row ->
+                    for (i in 0 until row.childCount) {
+                        val chip = row.getChildAt(i) as? TextView
+                        if (chip?.tag == label) {
+                            chip.setTextColor(Color.parseColor("#8888A4"))
+                            chip.setBackgroundColor(Color.parseColor("#16161F"))
+                        }
+                    }
                 }
-                // Reset the chip in the sheet back to unselected gray
-                chipId?.let { id ->
-                    findViewById<TextView>(id).setTextColor(Color.parseColor("#8888A4"))
-                    findViewById<TextView>(id).setBackgroundColor(Color.parseColor("#16161F"))
-                }
-                // Rebuild the pill row now that one filter was removed
                 updateActiveFilterRow()
                 updateProfiles()
                 btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
             }
-            // Add the finished pill into the horizontal scroll container
             layoutActiveFilters.addView(pill)
-
         }
     }
 

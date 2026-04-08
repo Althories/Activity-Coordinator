@@ -18,6 +18,19 @@ object UserSession {
     const val MAX_PFP_SIZE = 200
     val storage = Firebase.storage // Firebase cloud storage, where all picture assets live
 
+    // Master category list fetched once from Firestore globals doc
+    var allCategories: List<String> = emptyList()
+
+    // Call this once at login to populate allCategories
+    fun fetchCategories(db: com.google.firebase.firestore.FirebaseFirestore, onDone: (() -> Unit)? = null) {
+        db.collection("globals").document("vXvJg3evjdr3Eom0xi11").get()
+            .addOnSuccessListener { doc ->
+                @Suppress("UNCHECKED_CAST")
+                allCategories = (doc.get("categories") as? List<String>) ?: emptyList()
+                onDone?.invoke()
+            }
+    }
+
     // Returns a given user's profile picture as bitmap. If it isn't saved, download it.
     // Defaults to the currently logged in user.
     fun getPfp(uid: String? = null): Bitmap? {

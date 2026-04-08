@@ -25,7 +25,6 @@ class FriendSearchActivity : AppCompatActivity() {
     private lateinit var btnClearSearch: Button
     private lateinit var layoutNoResults: LinearLayout
     private lateinit var recyclerView: RecyclerView
-    private val allCategories = listOf("Music", "Hiking", "Gaming", "Reading", "Merge Dragons", "Cooking", "Travel", "Coding", "Disc Golf") //TODO replace with db query
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -130,7 +129,10 @@ class FriendSearchActivity : AppCompatActivity() {
 
     private fun buildInterestChips() {
         val container = findViewById<LinearLayout>(R.id.layout_search_chips)
-        allCategories.forEach { label ->
+        val categories = UserSession.allCategories.ifEmpty {
+            listOf("Music","Hiking","Cooking","Gaming","Reading","Travel","Merge Dragons","Coding","Disc Golf")
+        }
+        categories.forEach { label ->
             val chip = TextView(this)
             chip.text = label
             chip.setTextColor(Color.parseColor("#8888A4"))
