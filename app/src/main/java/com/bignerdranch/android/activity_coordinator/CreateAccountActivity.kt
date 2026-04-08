@@ -89,7 +89,7 @@ class CreateAccountActivity : AppCompatActivity() {
                             usedIds.add(nextUid)
                             // Build new user object document name IS the uid, no uid field needed
                             val newUser = hashMapOf(
-                                "name" to name,
+                                "profileName" to name,
                                 "email" to email,
                                 "password" to password,
                                 "categories" to emptyList<String>(),

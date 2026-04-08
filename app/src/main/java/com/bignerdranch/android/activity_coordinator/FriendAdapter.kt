@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +22,7 @@ class FriendAdapter(
     class FriendViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.friend_name)
         val avatar: TextView = view.findViewById(R.id.friend_avatar)
+        val pfp: ImageView = view.findViewById(R.id.friend_pfp)
         val bio: TextView = view.findViewById(R.id.friend_bio)
         val location: TextView = view.findViewById(R.id.friend_location)
         val categoriesContainer: LinearLayout = view.findViewById(R.id.friend_interests_container)
@@ -80,6 +82,7 @@ class FriendAdapter(
         if (isSearchMode) {
             holder.actionButton.visibility = View.VISIBLE
             holder.actionButton.text = "+ Add"
+            holder.actionButton.isEnabled = true //CRITICAL re-enable add button if user intends to add multiple friends in one go
             holder.actionButton.setOnClickListener {
                 onAddClick?.invoke(friend)
                 holder.actionButton.text = "✓ Added"
@@ -88,6 +91,9 @@ class FriendAdapter(
         } else {
             holder.actionButton.visibility = View.GONE //Not on the search activity, hide the add friend button
         }
+
+        // Set friend profile picture
+        holder.pfp.setImageBitmap(UserSession.getPfp(friend.id))
     }
 
     override fun getItemCount() = friends.size //Tells the RecyclerView how many total items are in a user's friends list

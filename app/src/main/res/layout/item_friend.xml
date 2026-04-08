@@ -15,16 +15,40 @@
         android:gravity="center_vertical"
         android:layout_marginBottom="10dp">
 
-        <TextView
-            android:id="@+id/friend_avatar"
+        <!-- Avatar circle -->
+        <FrameLayout
             android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:gravity="center"
-            android:textColor="#FFFFFF"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:background="#FF5C5C"
-            android:text="x" />
+            android:layout_height="52dp" >
+            <TextView
+                android:id="@+id/friend_avatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#FF5C5C"
+                android:gravity="center"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="XD"
+                android:textColor="#FFFFFF"
+                android:textSize="17dp"
+                android:textStyle="bold"
+                android:padding="0dp" />
+            <!--
+            Contains the actual profile picture
+            Invisible (no source or background) if pfp doesnt exist
+            - Branden
+            -->
+            <ImageView
+                android:id="@+id/friend_pfp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#0000"
+                android:src="#0000"
+                android:scaleType="centerCrop"
+                android:gravity="center"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"
