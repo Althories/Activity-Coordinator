@@ -10,12 +10,21 @@ import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.firestore
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.registerForActivityResult
+import com.bignerdranch.android.activity_coordinator.UserSession.currentUserId
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.storage.*
+import java.io.ByteArrayOutputStream
+import kotlinx.coroutines.*
+import java.util.Locale
 import com.google.firebase.storage.*
 import java.io.ByteArrayOutputStream
 import kotlin.collections.joinToString
@@ -27,11 +36,19 @@ class ProfileActivity : AppCompatActivity() {
     var uid = UserSession.currentUserId
     var db = Firebase.firestore
     var TAG = "ProfileActivity"
+    var chosenCats = mutableSetOf<String>()
+    var changedCats = mutableSetOf<String>()
+    val storage = Firebase.storage // Firebase cloud storage, where all picture assets live
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
-        val temp = getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription"))
-        Log.w("BHBDUIBHDIKBJ", temp.toString())
+
+        getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription"))
+
+        getCats(uid.toString())
+        ///                            Log.w("BHBDUIBHDIKBJ", temp.toString())
+        ////                           val returned = csvToText("merge_dragons,cats,morger,music")
         findViewById<Button>(R.id.btn_logout).setOnClickListener {
             // Clear the user session
             UserSession.currentUserId = null
@@ -40,11 +57,11 @@ class ProfileActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK //starts the activity in a fresh task, and FLAG_ACTIVITY_CLEAR_TASK wipes out every activity that was in the back stack
             startActivity(intent) //launches MainActivity with the flags applied
             finish() //Closes ProfileActivity
+
         }
 
-        val storage = Firebase.storage // Firebase cloud storage, where all picture assets live
-        val db = Firebase.firestore
-        val TAG = "ProfileActivity"
+
+
 
         // Hardcoded example user - to be replaced with currently logged-in user
         val user = hashMapOf(
@@ -80,6 +97,8 @@ class ProfileActivity : AppCompatActivity() {
             findViewById<EditText>(R.id.profileName),
             findViewById<EditText>(R.id.profileLocation),
             findViewById<EditText>(R.id.profileDescription)
+
+
         )
 
         val avatar = findViewById<Button>(R.id.avatar_1)
@@ -106,6 +125,7 @@ class ProfileActivity : AppCompatActivity() {
                 field.background.alpha = if (editing) 255 else 0 //Determines edit drawable visibility
                 if (!editing) field.clearFocus() //Hides edit bar drawable
             }
+            findViewById<LinearLayout>(R.id.bottom_sheet).visibility = if (editing) android.view.View.VISIBLE else android.view.View.GONE
             editButton.text = if (editing) "Save" else "Edit"
             // TODO: Should probably have something that indicates you can edit the profile pic
         }
@@ -132,6 +152,31 @@ class ProfileActivity : AppCompatActivity() {
                 Log.d(TAG, (findViewById<EditText>(R.id.profileName).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileLocation).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileDescription).text).toString())
+                var temp = 0
+                findViewById<EditText>(R.id.chip1).setText("")
+                findViewById<EditText>(R.id.chip2).setText("")
+                findViewById<EditText>(R.id.chip3).setText("")
+                findViewById<EditText>(R.id.chip3).visibility = android.view.View.GONE
+                findViewById<EditText>(R.id.chip2).visibility = android.view.View.GONE
+                findViewById<EditText>(R.id.chip1).visibility = android.view.View.GONE
+
+                for(x in chosenCats) {  //TODO End Hardcoding
+                    if (temp == 2 && x != "") {
+                        findViewById<EditText>(R.id.chip3).setText(x)
+                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
+                        temp += 1
+                    }
+                    if (temp == 1 && x != "") {
+                        findViewById<EditText>(R.id.chip2).setText(x)
+                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
+                        temp += 1
+                    }
+                    if (temp == 0 && x != "") {
+                        findViewById<EditText>(R.id.chip1).setText(x)
+                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
+                        temp += 1
+                    }
+                }
 
                 // The following code only runs if the profile picture was changed
                 // - Branden
@@ -173,7 +218,11 @@ class ProfileActivity : AppCompatActivity() {
                             .addOnFailureListener { e ->
                                 Log.w(TAG, "Error updating document", e)
                             }
-                    }
+                        db.document("users/$uid").update("categories", FieldValue.delete())   //This is bad Cod TODO Fix this crap
+                       if(!chosenCats.isEmpty()) {for (cat in chosenCats)
+                        db.document("users/$uid").update("categories", FieldValue.arrayUnion(cat))
+
+                    }}
                     .addOnFailureListener { e ->
                         Log.w(TAG, "Error finding document", e)
                     }
@@ -280,5 +329,95 @@ class ProfileActivity : AppCompatActivity() {
 
 
     }
+    fun String.capitalizeWords(): String =
+        split(" ").joinToString(" ") { word ->
+            word.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase() else it.toString()
+            }
+        }
+
+    fun getCats(uid : String){
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { userDoc ->
+
+                var stringCats = userDoc.get("categories").toString()
+                stringCats = stringCats.removeSurrounding("[","]")
+                val tempCats = stringCats.split(", ")
+                for (x in tempCats) {
+                    Log.w(TAG+" getCats",x)
+                    if(x !in chosenCats) chosenCats.add(x)
+                }
+                var temp = 0
+                findViewById<EditText>(R.id.chip3).visibility = android.view.View.GONE
+                findViewById<EditText>(R.id.chip2).visibility = android.view.View.GONE
+                findViewById<EditText>(R.id.chip1).visibility = android.view.View.GONE
+                for(x in chosenCats) {  //TODO end hardcoding
+                    if (temp == 2 && x != "") {
+                        findViewById<EditText>(R.id.chip3).setText(x)
+                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
+                        temp += 1
+                    }
+                    if (temp == 1 && x != "") {
+                        findViewById<EditText>(R.id.chip2).setText(x)
+                        findViewById<EditText>(R.id.chip2).visibility = android.view.View.VISIBLE
+                        temp += 1
+                    }
+                    if (temp == 0 && x != "") {
+                        findViewById<EditText>(R.id.chip1).setText(x)
+                        findViewById<EditText>(R.id.chip1).visibility = android.view.View.VISIBLE
+                        temp += 1
+                    }
+                }
+                Log.w(TAG, "We have docs $stringCats")
+                setupChips()
+            }
+    }
+
+    private fun setupChips() {
+        // Maps each chip's view ID to the interest label it represents
+        val chips = mapOf(
+            R.id.chip_music   to "Music",
+            R.id.chip_hiking  to "Hiking",
+            R.id.chip_cooking to "Cooking",
+            R.id.chip_gaming  to "Gaming",
+            R.id.chip_reading to "Reading",
+            R.id.chip_travel  to "Travel",
+            R.id.chip_merge_dragons    to "Merge Dragons",
+            R.id.chip_coding  to "Coding",
+            R.id.chip_disc_golf to "Disc Golf"
+        )
+
+
+        // Loop through every chip and attach a click listener to each one
+        chips.forEach { (chipId, label) ->
+            val chip = findViewById<TextView>(chipId)
+            if (label !in chosenCats) {
+                chip.setTextColor(Color.parseColor("#8888A4"))
+                chip.setBackgroundColor(Color.parseColor("#16161F"))
+            } else {
+                chip.setTextColor(Color.parseColor("#2ECC71"))
+                chip.setBackgroundColor(Color.parseColor("#222ECC71"))
+            }
+            chip.setOnClickListener {
+                if (label in chosenCats) {
+                    // Already selected, deselect it and reset to gray
+                    chosenCats.remove(label)
+                    chip.setTextColor(Color.parseColor("#8888A4"))
+                    chip.setBackgroundColor(Color.parseColor("#16161F"))
+                } else {
+                    // Not selected — select it and highlight green
+                    chosenCats.add(label)
+                    chip.setTextColor(Color.parseColor("#2ECC71"))
+                    chip.setBackgroundColor(Color.parseColor("#222ECC71"))
+                }
+                // Rebuild the active filter pills row to reflect the new state
+
+
+
+
+            }
+        }
+    }
+
 
 }
