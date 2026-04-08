@@ -75,7 +75,7 @@ class FriendSearchActivity : AppCompatActivity() {
                             if (uid != currentUid && !myFriends.contains(uid)) {
                                 allUsersFromDb.add(Friend(
                                     id = uid,
-                                    name = doc.getString("name") ?: "Unknown",
+                                    name = doc.getString("profileName") ?: "Unknown",
                                     location = doc.getString("profileLocation") ?: "Unknown Location",
                                     bio = doc.getString("profileDescription") ?: "",
                                     categories = doc.get("categories") as? List<String> ?: emptyList()

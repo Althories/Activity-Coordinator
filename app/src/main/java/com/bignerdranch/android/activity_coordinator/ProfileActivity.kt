@@ -36,6 +36,7 @@ class ProfileActivity : AppCompatActivity() {
     var db = Firebase.firestore
     var TAG = "ProfileActivity"
     var chosenCats = mutableSetOf<String>()
+    var changedCats = mutableSetOf<String>()
     val storage = Firebase.storage // Firebase cloud storage, where all picture assets live
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -151,17 +152,27 @@ class ProfileActivity : AppCompatActivity() {
                 Log.d(TAG, (findViewById<EditText>(R.id.profileLocation).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileDescription).text).toString())
                 var temp = 0
+                findViewById<EditText>(R.id.chip1).setText("")
+                findViewById<EditText>(R.id.chip2).setText("")
+                findViewById<EditText>(R.id.chip3).setText("")
+                findViewById<EditText>(R.id.chip3).visibility = android.view.View.GONE
+                findViewById<EditText>(R.id.chip2).visibility = android.view.View.GONE
+                findViewById<EditText>(R.id.chip1).visibility = android.view.View.GONE
+
                 for(x in chosenCats) {  //TODO End Hardcoding
-                    if (temp == 2) {
+                    if (temp == 2 && x != "") {
                         findViewById<EditText>(R.id.chip3).setText(x)
+                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
                         temp += 1
                     }
-                    if (temp == 1) {
+                    if (temp == 1 && x != "") {
                         findViewById<EditText>(R.id.chip2).setText(x)
+                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
                         temp += 1
                     }
-                    if (temp == 0) {
+                    if (temp == 0 && x != "") {
                         findViewById<EditText>(R.id.chip1).setText(x)
+                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
                         temp += 1
                     }
                 }
@@ -207,9 +218,10 @@ class ProfileActivity : AppCompatActivity() {
                                 Log.w(TAG, "Error updating document", e)
                             }
                         db.document("users/$uid").update("categories", FieldValue.delete())   //This is bad Cod TODO Fix this crap
-                        for (cat in chosenCats)
+                       if(!chosenCats.isEmpty()) {for (cat in chosenCats)
                         db.document("users/$uid").update("categories", FieldValue.arrayUnion(cat))
-                    }
+
+                    }}
                     .addOnFailureListener { e ->
                         Log.w(TAG, "Error finding document", e)
                     }
@@ -335,17 +347,23 @@ class ProfileActivity : AppCompatActivity() {
                     if(x !in chosenCats) chosenCats.add(x)
                 }
                 var temp = 0
+                findViewById<EditText>(R.id.chip3).visibility = android.view.View.GONE
+                findViewById<EditText>(R.id.chip2).visibility = android.view.View.GONE
+                findViewById<EditText>(R.id.chip1).visibility = android.view.View.GONE
                 for(x in chosenCats) {  //TODO end hardcoding
-                    if (temp == 2) {
+                    if (temp == 2 && x != "") {
                         findViewById<EditText>(R.id.chip3).setText(x)
+                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
                         temp += 1
                     }
-                    if (temp == 1) {
+                    if (temp == 1 && x != "") {
                         findViewById<EditText>(R.id.chip2).setText(x)
+                        findViewById<EditText>(R.id.chip2).visibility = android.view.View.VISIBLE
                         temp += 1
                     }
-                    if (temp == 0) {
+                    if (temp == 0 && x != "") {
                         findViewById<EditText>(R.id.chip1).setText(x)
+                        findViewById<EditText>(R.id.chip1).visibility = android.view.View.VISIBLE
                         temp += 1
                     }
                 }
