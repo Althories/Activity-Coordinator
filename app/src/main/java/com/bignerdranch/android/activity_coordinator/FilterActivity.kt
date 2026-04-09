@@ -17,6 +17,7 @@ import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.Filter
 import kotlinx.coroutines.tasks.await
 import android.content.Intent
+import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FieldPath
 
@@ -159,34 +160,58 @@ class FilterActivity : AppCompatActivity() {
     }
 
     private fun setupChips() {
-        val rows = listOf(
-            findViewById<LinearLayout>(R.id.chip_row_1),
-            findViewById<LinearLayout>(R.id.chip_row_2),
-            findViewById<LinearLayout>(R.id.chip_row_3),
-
-
-        )
-        rows.forEach { it.removeAllViews() }
+        val container = findViewById<LinearLayout>(R.id.chip_container)
+        container.removeAllViews()
 
         val categories = UserSession.allCategories.ifEmpty {
             listOf("Music","Hiking","Cooking","Gaming","Reading","Travel","Merge Dragons","Coding","Disc Golf")
         }
 
         val dp = resources.displayMetrics.density
+        val screenWidth = resources.displayMetrics.widthPixels
+        val horizontalPadding = (48 * dp).toInt() // 24dp padding each side from bottom sheet
 
-        categories.forEachIndexed { index, label ->
-            val row = rows[minOf(index / 3, 2)]
+        var currentRow: LinearLayout? = null
+        var currentRowWidth = 0
+
+        categories.forEach { label ->
             val chip = TextView(this)
             chip.text = label.replaceFirstChar { it.uppercase() }
             chip.setTextColor(Color.parseColor("#8888A4"))
             chip.setBackgroundColor(Color.parseColor("#16161F"))
             chip.textSize = 13f
-            val px14 = (14 * dp).toInt(); val px9 = (9 * dp).toInt()
+            chip.isSingleLine = true
+            chip.maxLines = 1
+            chip.tag = label
+            val px14 = (14 * dp).toInt()
+            val px9 = (9 * dp).toInt()
             chip.setPadding(px14, px9, px14, px9)
-            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-            lp.marginEnd = (10 * dp).toInt()
-            chip.layoutParams = lp
-            chip.tag = label // store label as tag so we can find it later
+
+            val chipLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            chipLp.marginEnd = (10 * dp).toInt()
+            chip.layoutParams = chipLp
+
+            chip.measure(
+                View.MeasureSpec.makeMeasureSpec(screenWidth - horizontalPadding, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            val chipWidth = chip.measuredWidth + chipLp.marginEnd
+
+            if (currentRow == null || currentRowWidth + chipWidth > screenWidth - horizontalPadding) {
+                currentRow = LinearLayout(this)
+                currentRow!!.orientation = LinearLayout.HORIZONTAL
+                val rowLp = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                rowLp.bottomMargin = (10 * dp).toInt()
+                currentRow!!.layoutParams = rowLp
+                container.addView(currentRow)
+                currentRowWidth = 0
+            }
 
             chip.setOnClickListener {
                 if (label in activeFilters) {
@@ -201,7 +226,9 @@ class FilterActivity : AppCompatActivity() {
                 updateActiveFilterRow()
                 btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
             }
-            row.addView(chip)
+
+            currentRow!!.addView(chip)
+            currentRowWidth += chipWidth
         }
     }
     //Helper function to updateProfile(). Calls friendAdapter to update the UI based on filter results
@@ -242,14 +269,11 @@ class FilterActivity : AppCompatActivity() {
             pill.setOnClickListener {
                 activeFilters.remove(label)
                 // Find the chip by tag and reset its color
-                val rows = listOf(
-                    findViewById<LinearLayout>(R.id.chip_row_1),
-                    findViewById<LinearLayout>(R.id.chip_row_2),
-                    findViewById<LinearLayout>(R.id.chip_row_3)
-                )
-                rows.forEach { row ->
-                    for (i in 0 until row.childCount) {
-                        val chip = row.getChildAt(i) as? TextView
+                val container = findViewById<LinearLayout>(R.id.chip_container)
+                for (i in 0 until container.childCount) {
+                    val row = container.getChildAt(i) as? LinearLayout ?: continue
+                    for (j in 0 until row.childCount) {
+                        val chip = row.getChildAt(j) as? TextView
                         if (chip?.tag == label) {
                             chip.setTextColor(Color.parseColor("#8888A4"))
                             chip.setBackgroundColor(Color.parseColor("#16161F"))
