@@ -69,16 +69,18 @@ class MainActivity : AppCompatActivity() {
                         val document = documents.documents[0] //Grabs first result from firestone query. Ideally this is the only result
                         val dbPassword = document.getString("password") //Fetches db password to compare with input
 
-                        if (dbPassword == passwordInput) {  //Passwords match, user may login
+                        if (dbPassword == passwordInput) {
                             val loggedInId = document.id
-                            UserSession.currentUserId = loggedInId //Logged in user saved globally to prevent issues
-                            UserSession.fetchCategories(db)
-                            UserSession.getPfp() // Load profile picture - Branden
-                            val intent = Intent(this, FilterActivity::class.java)
-                            intent.putExtra("USER_ID", loggedInId) //Sent to FilterActivity to display correct friends list on boot
-
-                            startActivity(intent)
-                            finish()
+                            UserSession.currentUserId = loggedInId
+                            UserSession.getPfp()
+                            UserSession.fetchCategories(db) {
+                                runOnUiThread { // makes sure that the filter menu populates before running app
+                                    val intent = Intent(this, FilterActivity::class.java)
+                                    intent.putExtra("USER_ID", loggedInId)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                            }
                         } else { //passwords did not match, womp womp
                             errorText.text = "Invalid password entered"
                             errorText.visibility = View.VISIBLE

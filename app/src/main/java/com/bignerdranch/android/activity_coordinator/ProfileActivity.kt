@@ -132,7 +132,21 @@ class ProfileActivity : AppCompatActivity() {
                 if (editing) android.view.View.VISIBLE else android.view.View.GONE
             findViewById<LinearLayout>(R.id.bottom_sheet).visibility = android.view.View.GONE
             editButton.text = if (editing) "Save" else "Edit"
-            // TODO: Should probably have something that indicates you can edit the profile pic
+            // Avatar edit hint
+            val avatar = findViewById<Button>(R.id.avatar_1)
+            val pfp = findViewById<ImageView>(R.id.pfp)
+            if (editing) {
+                pfp.alpha = 0.4f
+                avatar.text = "edit"
+                avatar.setTextColor(Color.WHITE)
+                avatar.textSize = 13f
+            } else {
+                pfp.alpha = 1f
+                // Restore original image/initials
+                val nameText = findViewById<EditText>(R.id.profileName).text.toString()
+                avatar.text = nameText.split(" ").take(2).joinToString("") { it.first().uppercase() }
+                avatar.textSize = 17f
+            }
         }
 
         //applyEditState is run ONCE at start of program to hide EditView bars in initial non-edit state
