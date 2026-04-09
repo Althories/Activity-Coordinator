@@ -51,7 +51,7 @@ class ProfileActivity : AppCompatActivity() {
             var activitiesExpanded = false
 
             val catsHeader = findViewById<LinearLayout>(R.id.cats_section_header)
-            val catsChevron = findViewById<TextView>(R.id.cats_chevron)
+            val catsChevron = findViewById<TextView>(R.id.cats_chevron) // anything in the collapse fields i called chevron (chevron symbol ▲)
             val catsContent = findViewById<LinearLayout>(R.id.interest_picker_section)
 
             val activitiesHeader = findViewById<LinearLayout>(R.id.activities_section_header)
@@ -190,10 +190,11 @@ class ProfileActivity : AppCompatActivity() {
                 avatar.text = nameText.split(" ").take(2).joinToString("") { it.first().uppercase() }
                 avatar.textSize = 17f
             }
-            if (!editing) {
+            if (!editing) { //when not editing, all edit features of the activities are supressed
                 activitiesContent.visibility = android.view.View.VISIBLE
                 activitiesChevron.visibility = android.view.View.GONE
             }
+            //handles the changing headers in the dropdowns
             val activitiesTitle = findViewById<TextView>(R.id.activities_section_title)
             val activitiesSubtitle = findViewById<TextView>(R.id.activities_section_subtitle)
             if (editing) {
@@ -395,6 +396,7 @@ class ProfileActivity : AppCompatActivity() {
                 findViewById<EditText>(R.id.profileDescription).setText(returnable[2])
                 val activityLabel = findViewById<TextView>(R.id.current_activity_label)
                 val activityField = findViewById<EditText>(R.id.profileCurrentActivity)
+                //logic to hide current profile activity if not specified
                 if (returnable[3].isEmpty()) {
                     activityLabel.visibility = android.view.View.GONE
                     activityField.visibility = android.view.View.GONE
@@ -572,25 +574,31 @@ class ProfileActivity : AppCompatActivity() {
             currentRowWidth += chipWidth
         }
     }
+    // Fetches the user's saved activities from Firestore and populates the local activitiesMap
     private fun loadActivities(uid: String) {
         db.collection("users").document(uid).get()
             .addOnSuccessListener { doc ->
                 val raw = doc.get("activities")
                 if (raw is Map<*, *>) {
                     raw.forEach { (k, v) ->
+                        // Only process entries where key is a String and value is a List, caused bug before present
                         if (k is String && v is List<*>) {
                             activitiesMap[k] = v.filterIsInstance<String>().toMutableList()
                         }
                     }
                 }
+                // Refresh the UI on the main thread after loading data
                 runOnUiThread { refreshActivitiesEditor(false) }
             }
     }
+    // Rebuilds the activities editor UI. Pass editing=true to show input rows,
+    // remove buttons, and activity count badges.
     fun refreshActivitiesEditor(editing: Boolean = false) {
         val container = findViewById<LinearLayout>(R.id.activities_editor_container)
         container.removeAllViews()
         val dp = resources.displayMetrics.density
 
+        // Show a placeholder if the user hasn't selected any interest categories yet
         if (chosenCats.isEmpty()) {
             val empty = TextView(this)
             empty.text = "Select some interests first"
@@ -600,10 +608,11 @@ class ProfileActivity : AppCompatActivity() {
             container.addView(empty)
             return
         }
-
+        // Iterate over each valid selected category and build its section
         chosenCats.filter { it.isNotEmpty() && it != "null" }.forEach { cat ->
             val catActivities = activitiesMap.getOrPut(cat) { mutableListOf() }
 
+            // Category Header Row
             val catHeader = LinearLayout(this)
             catHeader.orientation = LinearLayout.HORIZONTAL
             catHeader.gravity = android.view.Gravity.CENTER_VERTICAL
@@ -613,14 +622,14 @@ class ProfileActivity : AppCompatActivity() {
             catHeader.layoutParams = headerLp
             catHeader.setBackgroundColor(Color.parseColor("#1E1E2A"))
             catHeader.setPadding((10 * dp).toInt(), (8 * dp).toInt(), (10 * dp).toInt(), (8 * dp).toInt())
-
+            // Category name label ("Sports", "Music")
             val catTitle = TextView(this)
             catTitle.text = cat.replaceFirstChar { it.uppercase() }
             catTitle.setTextColor(Color.WHITE)
             catTitle.textSize = 13f
             catTitle.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             catHeader.addView(catTitle)
-
+            // Badge showing how many activities; only visible in edit mode
             val countBadge = TextView(this)
             countBadge.setTextColor(Color.parseColor("#2ECC71"))
             countBadge.textSize = 11f
@@ -635,10 +644,11 @@ class ProfileActivity : AppCompatActivity() {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
-
+            // Rebuilds all chip rows from scratch (called on add/remove or expand/collapse)
             fun rebuildChips() {
                 chipsContainer.removeAllViews()
                 catActivities.forEachIndexed { index, act ->
+                    // Each activity gets its own horizontal row
                     val rowChip = LinearLayout(this)
                     rowChip.orientation = LinearLayout.HORIZONTAL
                     rowChip.gravity = android.view.Gravity.CENTER_VERTICAL
@@ -647,7 +657,7 @@ class ProfileActivity : AppCompatActivity() {
                     rowChip.layoutParams = rowLp
                     rowChip.setBackgroundColor(if (editing) Color.parseColor("#222ECC71") else Color.parseColor("#0D0D14"))
 
-                    // Hide rows beyond index 1 unless expanded
+                    // Collapse rows beyond the first 2 by default when there are more than 2
                     if (index >= 2 && catActivities.size > 2) {
                         rowChip.visibility = android.view.View.GONE
                     }
@@ -661,7 +671,7 @@ class ProfileActivity : AppCompatActivity() {
                     chip.setBackgroundColor(Color.TRANSPARENT)
                     chip.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
                     rowChip.addView(chip)
-
+                    // In edit mode, show a remove (✕) button next to each activity
                     if (editing) {
                         val removeBtn = TextView(this)
                         removeBtn.text = "✕"
@@ -680,7 +690,7 @@ class ProfileActivity : AppCompatActivity() {
                     chipsContainer.addView(rowChip)
                 }
 
-                // Show more / show less toggle row
+                // Show a "▼ N more" toggle row when there are more than 2 activities
                 if (catActivities.size > 2) {
                     val toggleRow = TextView(this)
                     val hiddenCount = catActivities.size - 2
@@ -700,7 +710,7 @@ class ProfileActivity : AppCompatActivity() {
                     }
                     chipsContainer.addView(toggleRow)
                 }
-
+                // Show a placeholder message if no activities have been added yet
                 if (catActivities.isEmpty()) {
                     val placeholder = TextView(this)
                     placeholder.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
@@ -713,14 +723,14 @@ class ProfileActivity : AppCompatActivity() {
 
             rebuildChips()
             container.addView(chipsContainer)
-
+            // Add Activity Input Row (only shown in edit mode)
             val inputRow = LinearLayout(this)
             inputRow.orientation = LinearLayout.HORIZONTAL
             inputRow.gravity = android.view.Gravity.CENTER_VERTICAL
             val inputLp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             inputLp.topMargin = (6 * dp).toInt()
             inputRow.layoutParams = inputLp
-
+            // Text field for typing a new activity name
             val input = EditText(this)
             input.hint = "Add activity for ${cat.replaceFirstChar { it.uppercase() }}..."
             input.setHintTextColor(Color.parseColor("#555566"))
@@ -732,6 +742,7 @@ class ProfileActivity : AppCompatActivity() {
             input.inputType = android.text.InputType.TYPE_CLASS_TEXT
             input.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
 
+            // button to confirm adding a new activity
             val addBtn = Button(this)
             addBtn.text = "+"
             addBtn.setTextColor(Color.WHITE)
@@ -752,10 +763,9 @@ class ProfileActivity : AppCompatActivity() {
                     rebuildChips()
                 }
             }
-            input.setOnEditorActionListener { _, _, _ -> addBtn.performClick(); true }
-
             inputRow.addView(input)
             inputRow.addView(addBtn)
+            // Only attach the input row to the container when in edit mode
             if (editing) container.addView(inputRow)
         }
     }
