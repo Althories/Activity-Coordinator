@@ -158,11 +158,11 @@ class FilterActivity : AppCompatActivity() {
                 }
             }
     }
-
+//creates filter chips and handles selection logic (coloring)
     private fun setupChips() {
         val container = findViewById<LinearLayout>(R.id.chip_container)
         container.removeAllViews()
-
+        // Use categories from session or fallback list (used for testing, fallback should never be seen but might prevent crashes if something goes wrong)
         val categories = UserSession.allCategories.ifEmpty {
             listOf("Music","Hiking","Cooking","Gaming","Reading","Travel","Merge Dragons","Coding","Disc Golf")
         }
@@ -173,7 +173,7 @@ class FilterActivity : AppCompatActivity() {
 
         var currentRow: LinearLayout? = null
         var currentRowWidth = 0
-
+        // Create chip (TextView styled as button)
         categories.forEach { label ->
             val chip = TextView(this)
             chip.text = label.replaceFirstChar { it.uppercase() }
@@ -186,20 +186,20 @@ class FilterActivity : AppCompatActivity() {
             val px14 = (14 * dp).toInt()
             val px9 = (9 * dp).toInt()
             chip.setPadding(px14, px9, px14, px9)
-
+            // Layout params for spacing
             val chipLp = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
             chipLp.marginEnd = (10 * dp).toInt()
             chip.layoutParams = chipLp
-
+            // Measure chip width to wrap rows properly
             chip.measure(
                 View.MeasureSpec.makeMeasureSpec(screenWidth - horizontalPadding, View.MeasureSpec.AT_MOST),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
             )
             val chipWidth = chip.measuredWidth + chipLp.marginEnd
-
+            // Start new row if needed
             if (currentRow == null || currentRowWidth + chipWidth > screenWidth - horizontalPadding) {
                 currentRow = LinearLayout(this)
                 currentRow!!.orientation = LinearLayout.HORIZONTAL
@@ -212,7 +212,7 @@ class FilterActivity : AppCompatActivity() {
                 container.addView(currentRow)
                 currentRowWidth = 0
             }
-
+            // Handle chip click (toggle selection)
             chip.setOnClickListener {
                 if (label in activeFilters) {
                     activeFilters.remove(label)
@@ -224,6 +224,7 @@ class FilterActivity : AppCompatActivity() {
                     chip.setBackgroundColor(Color.parseColor("#222ECC71"))
                 }
                 updateActiveFilterRow()
+                // Update button text
                 btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
             }
 
@@ -270,8 +271,15 @@ class FilterActivity : AppCompatActivity() {
                 activeFilters.remove(label)
                 // Find the chip by tag and reset its color
                 val container = findViewById<LinearLayout>(R.id.chip_container)
+                // Loop through each row inside the container
+                // container.childCount = number of rows
                 for (i in 0 until container.childCount) {
+                    // Each child of container should be a LinearLayout (a row of chips)
+                    // Safe cast (as?) is used in case something unexpected is in the container
+                    // If casting fails (null), skip this iteration with 'continue'
                     val row = container.getChildAt(i) as? LinearLayout ?: continue
+                    // Loop through each chip inside the current row
+                    // row.childCount = number of chips in that row
                     for (j in 0 until row.childCount) {
                         val chip = row.getChildAt(j) as? TextView
                         if (chip?.tag == label) {

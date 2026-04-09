@@ -52,12 +52,13 @@ class FriendAdapter(
         holder.categoriesContainer.orientation = LinearLayout.VERTICAL
 
         val screenWidth = context.resources.displayMetrics.widthPixels
-        val containerWidth = screenWidth - (64 * dp).toInt() // account for card padding
+        val containerWidth = screenWidth - (64 * dp).toInt() // // Adjust for padding so chips don't overflow outside card
         var currentRow: LinearLayout? = null
         var currentRowWidth = 0
         var rowCount = 0
 
         friend.categories.forEach { category ->
+            // Create a chip dynamically
             val chip = TextView(context)
             chip.text = category.replaceFirstChar { it.uppercase() }
             chip.setTextColor(Color.parseColor("#8888A4"))
@@ -65,15 +66,17 @@ class FriendAdapter(
             chip.isSingleLine = true
             chip.maxLines = 1
             chip.setBackgroundColor(Color.parseColor("#0D0D14"))
+            // Padding inside chip
             chip.setPadding((9 * dp).toInt(), (5 * dp).toInt(), (9 * dp).toInt(), (5 * dp).toInt())
-
+            // Layout params for spacing between chips
             val chipLp = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
             chipLp.marginEnd = (7 * dp).toInt()
             chip.layoutParams = chipLp
-
+            // measure() calculates how wide the chip WILL be BEFORE it's added to layout
+            // This allows us to manually wrap chips into rows
             chip.measure(
                 View.MeasureSpec.makeMeasureSpec(containerWidth, View.MeasureSpec.AT_MOST),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
@@ -81,17 +84,19 @@ class FriendAdapter(
             val chipWidth = chip.measuredWidth + chipLp.marginEnd
 
             if (currentRow == null || currentRowWidth + chipWidth > containerWidth) {
-                if (rowCount >= 2) return@forEach
+                // Limit to max 2 rows of chips
+                if (rowCount >= 2) return@forEach //@... like continue
                 currentRow = LinearLayout(context)
-                currentRow!!.orientation = LinearLayout.HORIZONTAL
+                currentRow!!.orientation = LinearLayout.HORIZONTAL // !! tells system that that isnt going to be null, gave me issues without it for some reason idk
                 val rowLp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                 rowLp.bottomMargin = (4 * dp).toInt()
                 currentRow!!.layoutParams = rowLp
+                // Add new row to container
                 holder.categoriesContainer.addView(currentRow)
                 currentRowWidth = 0
                 rowCount++
             }
-
+            // Add chip to current row
             currentRow!!.addView(chip)
             currentRowWidth += chipWidth
         }
