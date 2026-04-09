@@ -26,7 +26,7 @@ import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.*
 import java.util.Locale
 import com.google.firebase.storage.*
-import java.io.ByteArrayOutputStream
+
 import kotlin.collections.joinToString
 import kotlin.collections.take
 import kotlin.text.split
@@ -37,7 +37,8 @@ class ProfileActivity : AppCompatActivity() {
     var db = Firebase.firestore
     var TAG = "ProfileActivity"
     var chosenCats = mutableSetOf<String>()
-    var changedCats = mutableSetOf<String>()
+    var subCats = mutableSetOf<String>()
+    var addCats = mutableSetOf<String>()
     val storage = Firebase.storage // Firebase cloud storage, where all picture assets live
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -168,12 +169,12 @@ class ProfileActivity : AppCompatActivity() {
                     }
                     if (temp == 1 && x != "") {
                         findViewById<EditText>(R.id.chip2).setText(x)
-                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
+                        findViewById<EditText>(R.id.chip2).visibility = android.view.View.VISIBLE
                         temp += 1
                     }
                     if (temp == 0 && x != "") {
                         findViewById<EditText>(R.id.chip1).setText(x)
-                        findViewById<EditText>(R.id.chip3).visibility = android.view.View.VISIBLE
+                        findViewById<EditText>(R.id.chip1).visibility = android.view.View.VISIBLE
                         temp += 1
                     }
                 }
@@ -218,11 +219,17 @@ class ProfileActivity : AppCompatActivity() {
                             .addOnFailureListener { e ->
                                 Log.w(TAG, "Error updating document", e)
                             }
-                        db.document("users/$uid").update("categories", FieldValue.delete())   //This is bad Cod TODO Fix this crap
-                       if(!chosenCats.isEmpty()) {for (cat in chosenCats)
-                        db.document("users/$uid").update("categories", FieldValue.arrayUnion(cat))
 
-                    }}
+
+                        for (cat in addCats) {
+                        db.document("users/$uid").update("categories", FieldValue.arrayUnion(cat))
+                            Log.w(TAG,cat)
+                        }
+                        for (cat in subCats) {
+                            db.document("users/$uid").update("categories", FieldValue.arrayRemove(cat))
+                            Log.w(TAG,cat)
+                        }
+                    }
                     .addOnFailureListener { e ->
                         Log.w(TAG, "Error finding document", e)
                     }
@@ -402,11 +409,14 @@ class ProfileActivity : AppCompatActivity() {
                 if (label in chosenCats) {
                     // Already selected, deselect it and reset to gray
                     chosenCats.remove(label)
+                    if (label in addCats) {addCats.remove(label)}
+                    else  {subCats.add(label)}
                     chip.setTextColor(Color.parseColor("#8888A4"))
                     chip.setBackgroundColor(Color.parseColor("#16161F"))
                 } else {
                     // Not selected — select it and highlight green
                     chosenCats.add(label)
+                    addCats.add(label)
                     chip.setTextColor(Color.parseColor("#2ECC71"))
                     chip.setBackgroundColor(Color.parseColor("#222ECC71"))
                 }
