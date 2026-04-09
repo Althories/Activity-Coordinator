@@ -8,6 +8,7 @@ data class Friend(
     val name: String = "",
     val location: String = "",
     val bio: String = "",
+    val currentActivity: String = "",
     val pfp: Bitmap? = null,
     val categories: List<String> = emptyList()
 )

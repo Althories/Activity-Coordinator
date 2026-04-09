@@ -37,17 +37,44 @@ class ProfileActivity : AppCompatActivity() {
     var TAG = "ProfileActivity"
     var chosenCats = mutableSetOf<String>()
     var changedCats = mutableSetOf<String>()
+    var activitiesMap = mutableMapOf<String, MutableList<String>>() //Storeing activities
+    var isEditing = false
     val storage = Firebase.storage // Firebase cloud storage, where all picture assets live
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
-        getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription"))
+        getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription","profileCurrentActivity"))
 
+            var catsExpanded = false
+            var activitiesExpanded = false
+
+            val catsHeader = findViewById<LinearLayout>(R.id.cats_section_header)
+            val catsChevron = findViewById<TextView>(R.id.cats_chevron)
+            val catsContent = findViewById<LinearLayout>(R.id.interest_picker_section)
+
+            val activitiesHeader = findViewById<LinearLayout>(R.id.activities_section_header)
+            val activitiesChevron = findViewById<TextView>(R.id.activities_chevron)
+            val activitiesContent = findViewById<LinearLayout>(R.id.activities_section_content)
+
+            catsHeader.setOnClickListener {
+                catsExpanded = !catsExpanded
+                catsContent.visibility = if (catsExpanded) android.view.View.VISIBLE else android.view.View.GONE
+                catsChevron.text = if (catsExpanded) "▲" else "▼"
+            }
+
+        activitiesHeader.setOnClickListener {
+            if (isEditing) {
+                activitiesExpanded = !activitiesExpanded
+                activitiesContent.visibility = if (activitiesExpanded) android.view.View.VISIBLE else android.view.View.GONE
+                activitiesChevron.text = if (activitiesExpanded) "▲" else "▼"
+            }
+        }
         UserSession.fetchCategories(db) {
             runOnUiThread {
                 getCats(uid.toString())
+                loadActivities(uid.toString())
             }
         }
         ///                            Log.w("BHBDUIBHDIKBJ", temp.toString())
@@ -99,7 +126,8 @@ class ProfileActivity : AppCompatActivity() {
         val editableFields = listOf(
             findViewById<EditText>(R.id.profileName),
             findViewById<EditText>(R.id.profileLocation),
-            findViewById<EditText>(R.id.profileDescription)
+            findViewById<EditText>(R.id.profileDescription),
+            findViewById<EditText>(R.id.profileCurrentActivity)
 
 
         )
@@ -118,8 +146,6 @@ class ProfileActivity : AppCompatActivity() {
         // ^ Branden
 
         val editButton = findViewById<Button>(R.id.edit_profile_button)
-        var isEditing = false //Tells EditViews how they should look based on activity state
-
         //Controls whether EditViews are editable. editing boolean has the same T/F state as isEditing
         fun applyEditState(editing: Boolean) {
             editableFields.forEach { field ->
@@ -128,8 +154,25 @@ class ProfileActivity : AppCompatActivity() {
                 field.background.alpha = if (editing) 255 else 0
                 if (!editing) field.clearFocus()
             }
-            findViewById<LinearLayout>(R.id.interest_picker_section).visibility =
+            val editSections = findViewById<LinearLayout>(R.id.edit_sections_wrapper)
+            editSections.visibility = android.view.View.VISIBLE  // always visible
+            findViewById<LinearLayout>(R.id.cats_section_header).visibility =
                 if (editing) android.view.View.VISIBLE else android.view.View.GONE
+            findViewById<LinearLayout>(R.id.interest_picker_section).visibility =
+                if (editing) android.view.View.GONE else android.view.View.GONE
+            if (editing) {
+                catsExpanded = false
+                catsContent.visibility = android.view.View.GONE
+                catsChevron.text = "▼"
+                // leave activitiesContent visible and expanded in edit mode
+                activitiesExpanded = false
+                activitiesContent.visibility = android.view.View.VISIBLE
+                activitiesChevron.visibility = android.view.View.VISIBLE
+                activitiesChevron.text = "▼"
+            } else {
+                activitiesContent.visibility = android.view.View.VISIBLE
+                activitiesChevron.visibility = if (editing) android.view.View.VISIBLE else android.view.View.GONE
+            }
             findViewById<LinearLayout>(R.id.bottom_sheet).visibility = android.view.View.GONE
             editButton.text = if (editing) "Save" else "Edit"
             // Avatar edit hint
@@ -147,6 +190,35 @@ class ProfileActivity : AppCompatActivity() {
                 avatar.text = nameText.split(" ").take(2).joinToString("") { it.first().uppercase() }
                 avatar.textSize = 17f
             }
+            if (!editing) {
+                activitiesContent.visibility = android.view.View.VISIBLE
+                activitiesChevron.visibility = android.view.View.GONE
+            }
+            val activitiesTitle = findViewById<TextView>(R.id.activities_section_title)
+            val activitiesSubtitle = findViewById<TextView>(R.id.activities_section_subtitle)
+            if (editing) {
+                activitiesTitle.text = "Edit Your Activities"
+                activitiesSubtitle.visibility = android.view.View.VISIBLE
+                activitiesSubtitle.text = "Add specific activities within your interests"
+
+            } else {
+                activitiesTitle.text = "Activities"
+                activitiesSubtitle.visibility = android.view.View.GONE
+
+            }
+            val activityLabel = findViewById<TextView>(R.id.current_activity_label)
+            val activityField = findViewById<EditText>(R.id.profileCurrentActivity)
+            if (editing) {
+                activityLabel.visibility = android.view.View.VISIBLE
+                activityField.visibility = android.view.View.VISIBLE
+            } else {
+                val text = activityField.text.toString()
+                val isBlank = text.isEmpty() || text == "null"
+                activityLabel.visibility = if (isBlank) android.view.View.GONE else android.view.View.VISIBLE
+                activityField.visibility = if (isBlank) android.view.View.GONE else android.view.View.VISIBLE
+            }
+            refreshActivitiesEditor(editing)
+
         }
 
         //applyEditState is run ONCE at start of program to hide EditView bars in initial non-edit state
@@ -172,6 +244,10 @@ class ProfileActivity : AppCompatActivity() {
                 Log.d(TAG, (findViewById<EditText>(R.id.profileLocation).text).toString())
                 Log.d(TAG, (findViewById<EditText>(R.id.profileDescription).text).toString())
                 refreshDisplayChips()
+                // save activities to Firestore
+                db.document("users/$uid").update("activities", activitiesMap as Map<String, List<String>>)
+                    .addOnSuccessListener { Log.d(TAG, "Activities saved") }
+                    .addOnFailureListener { e -> Log.w(TAG, "Error saving activities", e) }
 
                 // The following code only runs if the profile picture was changed
                 // - Branden
@@ -206,7 +282,10 @@ class ProfileActivity : AppCompatActivity() {
                         db.document("users/$uid")
                             .update("profileName", (findViewById<EditText>(R.id.profileName).text).toString(),
                                 "profileLocation", (findViewById<EditText>(R.id.profileLocation).text).toString(),
-                                "profileDescription", (findViewById<EditText>(R.id.profileDescription).text).toString())
+                                "profileDescription", (findViewById<EditText>(R.id.profileDescription).text).toString(),
+                                "profileCurrentActivity", (findViewById<EditText>(R.id.profileCurrentActivity).text).toString()
+                            )
+
                             .addOnSuccessListener {
                                 Log.d(TAG, "Document at users/$uid.id} successfully updated.")
                             }
@@ -309,11 +388,22 @@ class ProfileActivity : AppCompatActivity() {
         db.collection("users").document(uid).get()
             .addOnSuccessListener { userDoc ->
                 for (x in names.indices)
-                    returnable[x] = userDoc.get(names[x]).toString()
+                    returnable[x] = userDoc.get(names[x])?.toString() ?: ""
                 if(returnable[0] == "null") returnable[0] = "Your name here"
                 findViewById<EditText>(R.id.profileName).setText(returnable[0])
                 findViewById<EditText>(R.id.profileLocation).setText(returnable[1])
                 findViewById<EditText>(R.id.profileDescription).setText(returnable[2])
+                val activityLabel = findViewById<TextView>(R.id.current_activity_label)
+                val activityField = findViewById<EditText>(R.id.profileCurrentActivity)
+                if (returnable[3].isEmpty()) {
+                    activityLabel.visibility = android.view.View.GONE
+                    activityField.visibility = android.view.View.GONE
+                } else {
+                    activityLabel.visibility = android.view.View.VISIBLE
+                    activityField.visibility = android.view.View.VISIBLE
+                    activityField.setText(returnable[3])
+                }
+
                 Log.w(TAG, "This is the last thing before the crash")
                 findViewById<Button>(R.id.avatar_1).setText(returnable[0].split(" ").take(2).joinToString(""){ it.first().uppercase() } )
 
@@ -346,6 +436,7 @@ class ProfileActivity : AppCompatActivity() {
                 Log.w(TAG, "We have docs $stringCats")
                 setupChips()
                 refreshDisplayChips()
+                refreshActivitiesEditor(false)
             }
     }
     private fun refreshDisplayChips() {
@@ -437,12 +528,15 @@ class ProfileActivity : AppCompatActivity() {
                     chosenCats.remove(label)
                     chip.setTextColor(Color.parseColor("#8888A4"))
                     chip.setBackgroundColor(Color.parseColor("#16161F"))
+                    activitiesMap.remove(label) //removes the associated activities when category is removed
+                    db.document("users/$uid").update("activities", activitiesMap as Map<String, List<String>>)
                 } else {
                     chosenCats.add(label)
                     chip.setTextColor(Color.parseColor("#2ECC71"))
                     chip.setBackgroundColor(Color.parseColor("#222ECC71"))
                 }
                 refreshDisplayChips()
+                refreshActivitiesEditor(isEditing)
             }
 
             // Set layout params BEFORE measuring
@@ -476,6 +570,193 @@ class ProfileActivity : AppCompatActivity() {
 
             currentRow!!.addView(chip)
             currentRowWidth += chipWidth
+        }
+    }
+    private fun loadActivities(uid: String) {
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { doc ->
+                val raw = doc.get("activities")
+                if (raw is Map<*, *>) {
+                    raw.forEach { (k, v) ->
+                        if (k is String && v is List<*>) {
+                            activitiesMap[k] = v.filterIsInstance<String>().toMutableList()
+                        }
+                    }
+                }
+                runOnUiThread { refreshActivitiesEditor(false) }
+            }
+    }
+    fun refreshActivitiesEditor(editing: Boolean = false) {
+        val container = findViewById<LinearLayout>(R.id.activities_editor_container)
+        container.removeAllViews()
+        val dp = resources.displayMetrics.density
+
+        if (chosenCats.isEmpty()) {
+            val empty = TextView(this)
+            empty.text = "Select some interests first"
+            empty.setTextColor(Color.parseColor("#8888A4"))
+            empty.textSize = 13f
+            empty.setPadding(0, (8 * dp).toInt(), 0, 0)
+            container.addView(empty)
+            return
+        }
+
+        chosenCats.filter { it.isNotEmpty() && it != "null" }.forEach { cat ->
+            val catActivities = activitiesMap.getOrPut(cat) { mutableListOf() }
+
+            val catHeader = LinearLayout(this)
+            catHeader.orientation = LinearLayout.HORIZONTAL
+            catHeader.gravity = android.view.Gravity.CENTER_VERTICAL
+            val headerLp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            headerLp.topMargin = (14 * dp).toInt()
+            headerLp.bottomMargin = (6 * dp).toInt()
+            catHeader.layoutParams = headerLp
+            catHeader.setBackgroundColor(Color.parseColor("#1E1E2A"))
+            catHeader.setPadding((10 * dp).toInt(), (8 * dp).toInt(), (10 * dp).toInt(), (8 * dp).toInt())
+
+            val catTitle = TextView(this)
+            catTitle.text = cat.replaceFirstChar { it.uppercase() }
+            catTitle.setTextColor(Color.WHITE)
+            catTitle.textSize = 13f
+            catTitle.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            catHeader.addView(catTitle)
+
+            val countBadge = TextView(this)
+            countBadge.setTextColor(Color.parseColor("#2ECC71"))
+            countBadge.textSize = 11f
+            countBadge.text = "${catActivities.size} added"
+            catHeader.addView(countBadge)
+            countBadge.visibility = if (editing) android.view.View.VISIBLE else android.view.View.GONE
+            container.addView(catHeader)
+
+            val chipsContainer = LinearLayout(this)
+            chipsContainer.orientation = LinearLayout.VERTICAL
+            chipsContainer.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+
+            fun rebuildChips() {
+                chipsContainer.removeAllViews()
+                catActivities.forEachIndexed { index, act ->
+                    val rowChip = LinearLayout(this)
+                    rowChip.orientation = LinearLayout.HORIZONTAL
+                    rowChip.gravity = android.view.Gravity.CENTER_VERTICAL
+                    val rowLp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                    rowLp.bottomMargin = (6 * dp).toInt()
+                    rowChip.layoutParams = rowLp
+                    rowChip.setBackgroundColor(if (editing) Color.parseColor("#222ECC71") else Color.parseColor("#0D0D14"))
+
+                    // Hide rows beyond index 1 unless expanded
+                    if (index >= 2 && catActivities.size > 2) {
+                        rowChip.visibility = android.view.View.GONE
+                    }
+
+                    val chip = TextView(this)
+                    chip.text = act
+                    chip.textSize = 11f
+                    val px8 = (8 * dp).toInt(); val px4 = (4 * dp).toInt()
+                    chip.setPadding(px8, px4, px8, px4)
+                    chip.setTextColor(if (editing) Color.parseColor("#2ECC71") else Color.parseColor("#8888A4"))
+                    chip.setBackgroundColor(Color.TRANSPARENT)
+                    chip.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    rowChip.addView(chip)
+
+                    if (editing) {
+                        val removeBtn = TextView(this)
+                        removeBtn.text = "✕"
+                        removeBtn.setTextColor(Color.parseColor("#2ECC71"))
+                        removeBtn.textSize = 11f
+                        val px8b = (8 * dp).toInt()
+                        removeBtn.setPadding(px8b, 0, px8b, 0)
+                        removeBtn.setOnClickListener {
+                            catActivities.remove(act)
+                            countBadge.text = "${catActivities.size} added"
+                            rebuildChips()
+                        }
+                        rowChip.addView(removeBtn)
+                    }
+
+                    chipsContainer.addView(rowChip)
+                }
+
+                // Show more / show less toggle row
+                if (catActivities.size > 2) {
+                    val toggleRow = TextView(this)
+                    val hiddenCount = catActivities.size - 2
+                    toggleRow.text = "▼  $hiddenCount more"
+                    toggleRow.setTextColor(Color.parseColor("#8888A4"))
+                    toggleRow.textSize = 11f
+                    val px8 = (8 * dp).toInt(); val px4 = (4 * dp).toInt()
+                    toggleRow.setPadding(px8, px4, px8, px4)
+                    var expanded = false
+                    toggleRow.setOnClickListener {
+                        expanded = !expanded
+                        for (i in 2 until chipsContainer.childCount - 1) {
+                            chipsContainer.getChildAt(i).visibility =
+                                if (expanded) android.view.View.VISIBLE else android.view.View.GONE
+                        }
+                        toggleRow.text = if (expanded) "▲  show less" else "▼  $hiddenCount more"
+                    }
+                    chipsContainer.addView(toggleRow)
+                }
+
+                if (catActivities.isEmpty()) {
+                    val placeholder = TextView(this)
+                    placeholder.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                    placeholder.text = "No activities yet"
+                    placeholder.setTextColor(Color.parseColor("#555566"))
+                    placeholder.textSize = 11f
+                    chipsContainer.addView(placeholder)
+                }
+            }
+
+            rebuildChips()
+            container.addView(chipsContainer)
+
+            val inputRow = LinearLayout(this)
+            inputRow.orientation = LinearLayout.HORIZONTAL
+            inputRow.gravity = android.view.Gravity.CENTER_VERTICAL
+            val inputLp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            inputLp.topMargin = (6 * dp).toInt()
+            inputRow.layoutParams = inputLp
+
+            val input = EditText(this)
+            input.hint = "Add activity for ${cat.replaceFirstChar { it.uppercase() }}..."
+            input.setHintTextColor(Color.parseColor("#555566"))
+            input.setTextColor(Color.WHITE)
+            input.textSize = 12f
+            input.setBackgroundColor(Color.parseColor("#1A1A26"))
+            val px10 = (10 * dp).toInt(); val px7 = (7 * dp).toInt()
+            input.setPadding(px10, px7, px10, px7)
+            input.inputType = android.text.InputType.TYPE_CLASS_TEXT
+            input.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+
+            val addBtn = Button(this)
+            addBtn.text = "+"
+            addBtn.setTextColor(Color.WHITE)
+            addBtn.textSize = 16f
+            addBtn.setBackgroundColor(Color.parseColor("#2ECC71"))
+            val btnLp = LinearLayout.LayoutParams((40 * dp).toInt(), (40 * dp).toInt())
+            btnLp.marginStart = (6 * dp).toInt()
+            addBtn.layoutParams = btnLp
+            addBtn.setPadding(0, 0, 0, 0)
+
+            addBtn.setOnClickListener {
+                val text = input.text.toString().trim()
+                if (text.isNotEmpty() && text !in catActivities) {
+                    catActivities.add(text)
+                    activitiesMap[cat] = catActivities
+                    input.setText("")
+                    countBadge.text = "${catActivities.size} added"
+                    rebuildChips()
+                }
+            }
+            input.setOnEditorActionListener { _, _, _ -> addBtn.performClick(); true }
+
+            inputRow.addView(input)
+            inputRow.addView(addBtn)
+            if (editing) container.addView(inputRow)
         }
     }
 

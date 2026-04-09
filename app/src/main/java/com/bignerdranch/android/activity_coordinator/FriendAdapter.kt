@@ -24,6 +24,8 @@ class FriendAdapter(
         val avatar: TextView = view.findViewById(R.id.friend_avatar)
         val pfp: ImageView = view.findViewById(R.id.friend_pfp)
         val bio: TextView = view.findViewById(R.id.friend_bio)
+        val currentActivityLabel: TextView = view.findViewById(R.id.friend_current_activity_label)
+        val currentActivity: TextView = view.findViewById(R.id.friend_current_activity)
         val location: TextView = view.findViewById(R.id.friend_location)
         val categoriesContainer: LinearLayout = view.findViewById(R.id.friend_interests_container)
         val actionButton: Button = view.findViewById(R.id.btn_add_friend) //Add friend button w/visibility dependent on circumstances
@@ -46,6 +48,14 @@ class FriendAdapter(
         holder.avatar.text = friend.name.split(" ").take(2).joinToString("") { it.first().uppercase() }
         holder.location.text = friend.location
         holder.bio.text = friend.bio
+        holder.currentActivity.text = friend.currentActivity
+        if (friend.currentActivity.isEmpty() || friend.currentActivity == "null") {
+            holder.currentActivityLabel.visibility = View.GONE
+            holder.currentActivity.visibility = View.GONE
+        } else {
+            holder.currentActivityLabel.visibility = View.VISIBLE
+            holder.currentActivity.visibility = View.VISIBLE
+        }
 
         //All of the shit for category chips
         holder.categoriesContainer.removeAllViews()

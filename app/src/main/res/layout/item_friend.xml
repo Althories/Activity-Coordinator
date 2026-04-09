@@ -96,6 +96,24 @@
         android:maxLines="2"
         android:text="User bio goes here..." />
 
+    <TextView
+        android:id="@+id/friend_current_activity_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="I Am Currently:"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="2dp" />
+
+    <TextView
+        android:id="@+id/friend_current_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#8888A4"
+        android:textSize="13sp"
+        android:text="" />
+
     <LinearLayout
         android:id="@+id/friend_interests_container"
         android:layout_width="match_parent"

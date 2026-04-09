@@ -131,7 +131,8 @@ class FilterActivity : AppCompatActivity() {
                                     name = doc.getString("profileName") ?: "Unknown",
                                     categories = (doc.get("categories") as? List<String>) ?: emptyList(), //Adjustment to handle categories as an Array in Firestore
                                     location = doc.getString("profileLocation") ?: "Unknown Location",
-                                    bio = doc.getString("profileDescription") ?: "No bio provided"
+                                    bio = doc.getString("profileDescription") ?: "No bio provided",
+                                    currentActivity = doc.getString("profileCurrentActivity") ?: ""
                                 )
                             }
 
