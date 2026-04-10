@@ -9,7 +9,12 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 
 class ScheduleActivity : AppCompatActivity() {
 
@@ -17,10 +22,25 @@ class ScheduleActivity : AppCompatActivity() {
     private lateinit var Search: EditText
     private lateinit var btnClearSearch: Button
     private lateinit var layoutNoResults: LinearLayout
+    private val db = Firebase.firestore
+    private lateinit var activityAdapter: ActivityAdapter
+    private val allActivities = mutableListOf<ScheduledEvent>()
+    private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_schedule)
+
+        //Initialize existing UI
+        recyclerView = findViewById(R.id.recycler_search_results)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        activityAdapter = ActivityAdapter(allActivities) { event ->
+            joinActivity(event)
+        }
+        recyclerView.adapter = activityAdapter
+
+        fetchInvitedActivities() //Initial fetch of all friend-invited activities
 
         //Initialize all the UI parts
         SearchCount = findViewById(R.id.search_count)
@@ -33,8 +53,51 @@ class ScheduleActivity : AppCompatActivity() {
         setupNavBar()
     }
 
+    //Searches activities collection to check whether friended users have put the current user's ID into their invite list for an activity
+    private fun fetchInvitedActivities() {
+        val currentUid = UserSession.currentUserId ?: return
+
+        db.collection("activities")
+            .whereArrayContains("invitedFriends", currentUid)
+            .get()
+            .addOnSuccessListener { documents ->
+                allActivities.clear()
+                for (doc in documents) {
+                    //.toObject gets the name, location, etc.
+                    //.copy(id = doc.id) grabs the "envelope" ID and puts it in the object
+                    val event = doc.toObject(ScheduledEvent::class.java).copy(eventId = doc.id)
+                    allActivities.add(event)
+                }
+                activityAdapter.updateData(allActivities)
+            }
+    }
+
+    //TODO make more useful. Just a toast for now. Oughhh im toasting it. Ougghh
+    private fun joinActivity(event: ScheduledEvent) {
+        //TODO Logic for joining eventually will go here
+        Toast.makeText(this, "Joined ${event.eventName}", Toast.LENGTH_SHORT).show()
+    }
+
+    //Interacts with the search bar to show updated activity search results.
     private fun updateResults() {
         val query = Search.text.toString().trim().lowercase()
+
+        //Filter the master list of all activities, very similar to FriendSearchActivity implementation
+        val filtered = allActivities.filter { event ->
+            //Return true if search is empty OR if the name matches the query
+            query.isEmpty() || event.eventName.lowercase().contains(query)
+        }
+        //Push the filtered list to the adapter
+        activityAdapter.updateData(filtered)
+
+        //Update the UI's response to search results
+        SearchCount.text = when {
+            filtered.isEmpty() -> "No activities found"
+            query.isEmpty() -> "Search by activity name"
+            else -> "${filtered.size} result${if (filtered.size != 1) "s" else ""} found"
+        }
+        //Toggle "No Results" magnifying glass tingy
+        layoutNoResults.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
     }
 
     private fun setupSearchBar() {

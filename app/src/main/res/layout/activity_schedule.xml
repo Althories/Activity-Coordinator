@@ -35,7 +35,7 @@
                 android:id="@+id/search_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Search by name or interest"
+                android:text="Search by name..."
                 android:textColor="#8888A4"
                 android:textSize="12sp"
                 android:layout_marginTop="2dp" />
