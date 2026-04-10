@@ -181,8 +181,12 @@ class FriendSearchActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.nav_filter).setOnClickListener {
             startActivity(Intent(this, FilterActivity::class.java))
         }
+        findViewById<LinearLayout>(R.id.nav_schedule).setOnClickListener {
+            startActivity(Intent(this, ScheduleActivity::class.java))
+        }
         findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
+
     }
 }
