@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -14,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 
 class ScheduleActivity : AppCompatActivity() {
@@ -51,6 +53,13 @@ class ScheduleActivity : AppCompatActivity() {
         //Build UI elements
         setupSearchBar()
         setupNavBar()
+
+        //Button for creating a new activity (event)
+        val btnNewActivity = findViewById<Button>(R.id.btn_new_activity)
+        btnNewActivity.setOnClickListener {
+            //TODO make the call....
+            Toast.makeText(this, "This button works", Toast.LENGTH_SHORT).show()
+        }
     }
 
     //Searches activities collection to check whether friended users have put the current user's ID into their invite list for an activity
@@ -72,10 +81,21 @@ class ScheduleActivity : AppCompatActivity() {
             }
     }
 
-    //TODO make more useful. Just a toast for now. Oughhh im toasting it. Ougghh
+    //DB action to add current user to an activity they clicked "Join" on.
+    //This preserves the UI state of activities the user has joined when leaving ScheduleActivity
     private fun joinActivity(event: ScheduledEvent) {
-        //TODO Logic for joining eventually will go here
-        Toast.makeText(this, "Joined ${event.eventName}", Toast.LENGTH_SHORT).show()
+        val currentUid = UserSession.currentUserId ?: return
+
+        db.collection("activities").document(event.eventId)
+            .update("joinedUsers", FieldValue.arrayUnion(currentUid)) //arrayUnion handles multiple users joining an event at the same time
+            .addOnSuccessListener {
+                Toast.makeText(this, "You have joined ${event.eventName}!", Toast.LENGTH_SHORT).show()
+                //the local button update handles the immediate UI feedback
+            }
+            .addOnFailureListener { e ->
+                Log.e("DATABASE_ERROR", "Failed to join activity", e)
+                Toast.makeText(this, "Error. Try again", Toast.LENGTH_SHORT).show()
+            }
     }
 
     //Interacts with the search bar to show updated activity search results.

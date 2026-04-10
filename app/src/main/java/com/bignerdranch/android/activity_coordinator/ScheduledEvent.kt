@@ -8,5 +8,6 @@ data class ScheduledEvent (
     val eventName: String = "",
     val eventDescription: String = "",
     val eventLocation: String = "", //TEMP currently replaced by creatorName "Invited by" message
-    val invitedFriends: List<String> = emptyList()
+    val invitedFriends: List<String> = emptyList(),
+    val joinedUsers: List<String> = emptyList() //NEW: Track who clicked Join on activity
     )

@@ -28,15 +28,32 @@ class ActivityAdapter(
 
     override fun onBindViewHolder(holder: ActivityViewHolder, position: Int) {
         val event = activities[position]
+        val currentUid = UserSession.currentUserId ?: "" //necessary ref to currentUserId to check who's joining an event
 
         holder.name.text = event.eventName
         holder.location.text = "Invited by ${event.creatorName.ifEmpty { "a Friend" }}" //TEMP changed to tell you who invited you
         holder.description.text = event.eventDescription
 
-        holder.actionButton.text = "Join"
+        //Button starts visible. It was not showing up and I think it just needs a firm push
         holder.actionButton.visibility = View.VISIBLE
-        holder.actionButton.setOnClickListener {
-            onJoinClick(event)
+
+        //If user clicks on the join button at any point and is now on the joined list
+        if (event.joinedUsers.contains(currentUid)) {
+            holder.actionButton.text = "✓ Joined"
+            holder.actionButton.isEnabled = false
+            holder.actionButton.alpha = 0.5f
+            holder.actionButton.setOnClickListener(null)
+        } else {
+            holder.actionButton.text = "Join"
+            holder.actionButton.isEnabled = true
+            holder.actionButton.alpha = 1.0f
+            holder.actionButton.setOnClickListener {
+                onJoinClick(event)
+                //In-the-moment UI feedback upon user joining event
+                holder.actionButton.text = "✓ Joined"
+                holder.actionButton.isEnabled = false
+                holder.actionButton.alpha = 0.5f
+            }
         }
     }
 
