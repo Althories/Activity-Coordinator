@@ -1,160 +1,265 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/schedule_page"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/schedule_page_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="#0D0D14">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="48dp"
-            android:paddingBottom="12dp">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Activities"
-                    android:textColor="#FFFFFF"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/search_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Search by name..."
-                    android:textColor="#8888A4"
-                    android:textSize="12sp"
-                    android:layout_marginTop="2dp" />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/btn_new_activity"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New"
-                android:textColor="#FFFFFF"
-                android:textSize="16dp"
-                android:backgroundTint="#2A2A38" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="12dp"
-            android:gravity="center_vertical">
-
-            <EditText
-                android:id="@+id/search"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Search name or interest..."
-                android:textColor="#FFFFFF"
-                android:textColorHint="#8888A4"
-                android:textSize="14sp"
-                android:background="#16161F"
-                android:padding="12dp"
-                android:inputType="text"
-                android:singleLine="true" />
-
-            <Button
-                android:id="@+id/btn_clear_search"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Clear"
-                android:textColor="#FFFFFF"
-                android:textSize="13sp"
-                android:backgroundTint="#2A2A38"
-                android:layout_marginStart="8dp"
-                android:visibility="gone" />
-        </LinearLayout>
-
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="12dp">
-            <LinearLayout
-                android:id="@+id/layout_search_chips"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" />
-        </HorizontalScrollView>
-
-        <FrameLayout
-            android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_search_results"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="24dp" />
+                android:paddingTop="48dp"
+                android:paddingBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Activities"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/search_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Search by name..."
+                        android:textColor="#8888A4"
+                        android:textSize="12sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_new_activity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="New"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16dp"
+                    android:backgroundTint="#2A2A38" />
+
+            </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/layout_no_results"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:layout_gravity="center"
-                android:padding="40dp"
-                android:visibility="gone">
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="12dp"
+                android:gravity="center_vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <EditText
+                    android:id="@+id/search"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="🔍"
-                    android:textSize="48sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="No results found"
+                    android:layout_weight="1"
+                    android:hint="Search name..."
                     android:textColor="#FFFFFF"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="12dp" />
+                    android:textColorHint="#8888A4"
+                    android:textSize="14sp"
+                    android:background="#16161F"
+                    android:padding="12dp"
+                    android:inputType="text"
+                    android:singleLine="true" />
+
+                <Button
+                    android:id="@+id/btn_clear_search"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Clear"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:backgroundTint="#2A2A38"
+                    android:layout_marginStart="8dp"
+                    android:visibility="gone" />
             </LinearLayout>
-        </FrameLayout>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="12dp">
+                <LinearLayout
+                    android:id="@+id/layout_search_chips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_search_results"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="24dp" />
+
+                <LinearLayout
+                    android:id="@+id/layout_no_results"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:padding="40dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔍"
+                        android:textSize="48sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="No results found"
+                        android:textColor="#FFFFFF"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="12dp" />
+                </LinearLayout>
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <include
+            layout="@layout/nav_bar"
+            android:layout_width="match_parent"
+            android:layout_height="60dp" />
 
     </LinearLayout>
 
-    <include
-        layout="@layout/nav_bar"
+    <LinearLayout
+        android:id="@+id/create_activity_sheet"
         android:layout_width="match_parent"
-        android:layout_height="60dp" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="#1C1C28"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="24dp"
+        android:elevation="20dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        tools:visibility="visible">
 
-</LinearLayout>
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="20dp"
+            android:background="#30FFFFFF" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create New Activity"
+            android:textColor="#E8E8F0"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edit_event_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Activity Name (e.g. Disc Golf)"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#8888A4"
+            android:background="#0D0D14"
+            android:padding="12dp"
+            android:textSize="14sp"/>
+
+        <EditText
+            android:id="@+id/edit_event_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Location"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#8888A4"
+            android:background="#0D0D14"
+            android:padding="12dp"
+            android:textSize="14sp"/>
+
+        <EditText
+            android:id="@+id/edit_event_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="24dp"
+            android:hint="Description"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#8888A4"
+            android:background="#0D0D14"
+            android:padding="12dp"
+            android:textSize="14sp"
+            android:minLines="3"
+            android:gravity="top"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Invite Friends"
+            android:textColor="#8888A4"
+            android:textSize="12sp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_invite_friends"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        <Button
+            android:id="@+id/btn_confirm_create"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Create Activity"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:backgroundTint="#2ECC71" />
+    </LinearLayout>
+
+</FrameLayout>

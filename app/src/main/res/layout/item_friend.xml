@@ -27,7 +27,7 @@
                 android:gravity="center"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="XD"
+                android:text="A"
                 android:textColor="#FFFFFF"
                 android:textSize="17dp"
                 android:textStyle="bold"

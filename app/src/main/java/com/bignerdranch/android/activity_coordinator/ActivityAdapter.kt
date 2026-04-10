@@ -12,12 +12,12 @@ class ActivityAdapter(
     private val onJoinClick: (ScheduledEvent) -> Unit
 ) : RecyclerView.Adapter<ActivityAdapter.ActivityViewHolder>() {
 
-    //TEMP reusing IDs from FriendAdapter.kt. I should separate this later TODO
     class ActivityViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.friend_name)
         val location: TextView = view.findViewById(R.id.friend_location)
         val description: TextView = view.findViewById(R.id.friend_bio)
-        val actionButton: Button = view.findViewById(R.id.btn_add_friend)
+        val addActivityButton: Button = view.findViewById(R.id.btn_add_friend)
+        val avatar: TextView = view.findViewById(R.id.friend_avatar)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ActivityViewHolder {
@@ -28,31 +28,38 @@ class ActivityAdapter(
 
     override fun onBindViewHolder(holder: ActivityViewHolder, position: Int) {
         val event = activities[position]
-        val currentUid = UserSession.currentUserId ?: "" //necessary ref to currentUserId to check who's joining an event
+        val currentUid = UserSession.currentUserId ?: "" //necessary reference to currentUserId to check who's joining an event
 
         holder.name.text = event.eventName
-        holder.location.text = "Invited by ${event.creatorName.ifEmpty { "a Friend" }}" //TEMP changed to tell you who invited you
+
+        //mini block for combining inviter name and location
+        val inviteText = "Invited by ${event.creatorName.ifEmpty { "a Friend" }}"
+        val locationText = event.eventLocation.ifEmpty { "TBD" }
+        holder.location.text = "$inviteText • $locationText"
+        holder.location.setTextColor(android.graphics.Color.parseColor("#8888A4")) //color connector dot for consistency
+
         holder.description.text = event.eventDescription
+        holder.avatar.text = event.eventName.take(1).uppercase() //Basic interaction with activity, more work to remove the profile square altogether
 
         //Button starts visible. It was not showing up and I think it just needs a firm push
-        holder.actionButton.visibility = View.VISIBLE
+        holder.addActivityButton.visibility = View.VISIBLE
 
-        //If user clicks on the join button at any point and is now on the joined list
+        //Block for Button UI updating. If user clicks on the join button at any point and is now on the joined list
         if (event.joinedUsers.contains(currentUid)) {
-            holder.actionButton.text = "✓ Joined"
-            holder.actionButton.isEnabled = false
-            holder.actionButton.alpha = 0.5f
-            holder.actionButton.setOnClickListener(null)
+            holder.addActivityButton.text = "✓ Joined"
+            holder.addActivityButton.isEnabled = false
+            holder.addActivityButton.alpha = 0.5f
+            holder.addActivityButton.setOnClickListener(null)
         } else {
-            holder.actionButton.text = "Join"
-            holder.actionButton.isEnabled = true
-            holder.actionButton.alpha = 1.0f
-            holder.actionButton.setOnClickListener {
+            holder.addActivityButton.text = "Join"
+            holder.addActivityButton.isEnabled = true
+            holder.addActivityButton.alpha = 1.0f
+            holder.addActivityButton.setOnClickListener {
                 onJoinClick(event)
                 //In-the-moment UI feedback upon user joining event
-                holder.actionButton.text = "✓ Joined"
-                holder.actionButton.isEnabled = false
-                holder.actionButton.alpha = 0.5f
+                holder.addActivityButton.text = "✓ Joined"
+                holder.addActivityButton.isEnabled = false
+                holder.addActivityButton.alpha = 0.5f
             }
         }
     }

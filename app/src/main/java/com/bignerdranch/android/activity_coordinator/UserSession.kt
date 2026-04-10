@@ -10,6 +10,7 @@ import com.google.firebase.storage.storage
 object UserSession {
     //This variable stays alive as long as the app process is running
     var currentUserId: String? = null
+    var userName = "Yup" //Used by ScheduledEvent to show who invited you to an event. Lazy solution
 
     // vv Branden
     // Maps user IDs to bitmaps
