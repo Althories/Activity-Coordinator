@@ -47,6 +47,7 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/profile_subtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="#8888A4"

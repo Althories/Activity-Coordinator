@@ -1,5 +1,6 @@
 package com.bignerdranch.android.activity_coordinator
 
+import android.content.Intent
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -29,6 +30,7 @@ class FriendAdapter(
         val location: TextView = view.findViewById(R.id.friend_location)
         val categoriesContainer: LinearLayout = view.findViewById(R.id.friend_interests_container)
         val actionButton: Button = view.findViewById(R.id.btn_add_friend) //Add friend button w/visibility dependent on circumstances
+        val viewProfileLabel: TextView = view.findViewById(R.id.btn_view_profile)
     }
 
     //Called when the RecyclerView needs a new card layout. It inflates the item_friend.xml and wraps it in a FriendViewHolder
@@ -131,6 +133,15 @@ class FriendAdapter(
             }
         } else {
             holder.actionButton.visibility = View.GONE //Not on the search activity, hide the add friend button
+            holder.viewProfileLabel.visibility = View.VISIBLE
+
+            val openProfile: () -> Unit = { // gets the uid of the card tapped
+                val intent = Intent(context, FriendProfileActivity::class.java)
+                intent.putExtra("FRIEND_ID", friend.id)
+                context.startActivity(intent)
+            }
+            holder.itemView.setOnClickListener { openProfile() }
+            holder.viewProfileLabel.setOnClickListener { openProfile() }
         }
 
         // Set friend profile picture
