@@ -10,5 +10,6 @@ data class Friend(
     val bio: String = "",
     val currentActivity: String = "",
     val pfp: Bitmap? = null,
-    val categories: List<String> = emptyList()
+    val categories: List<String> = emptyList(),
+    val exactNameSearch: Boolean = false
 )

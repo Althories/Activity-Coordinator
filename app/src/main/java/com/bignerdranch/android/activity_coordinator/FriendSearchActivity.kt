@@ -78,7 +78,8 @@ class FriendSearchActivity : AppCompatActivity() {
                                     name = doc.getString("profileName") ?: "Unknown",
                                     location = doc.getString("profileLocation") ?: "Unknown Location",
                                     bio = doc.getString("profileDescription") ?: "",
-                                    categories = doc.get("categories") as? List<String> ?: emptyList()
+                                    categories = doc.get("categories") as? List<String> ?: emptyList(),
+                                    exactNameSearch = doc.getBoolean("exactNameSearch") ?: false
                                 ))
                             }
                         }
@@ -108,6 +109,12 @@ class FriendSearchActivity : AppCompatActivity() {
 
         //Filters master list of users based on both text search and chip selection
         val filtered = allUsersFromDb.filter { user ->
+            // Privacy check: if the user has exactNameSearch on, they only appear
+            // when the search query exactly matches their full name (case-insensitive).
+            // If the query is empty or only partial, they are hidden entirely.
+            if (user.exactNameSearch) {
+                if (query != user.name.lowercase()) return@filter false
+            }
             val matchesText = query.isEmpty() ||
                     user.name.lowercase().contains(query) ||
                     user.categories.any { it.lowercase().contains(query) }

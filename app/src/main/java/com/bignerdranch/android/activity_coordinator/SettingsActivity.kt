@@ -12,6 +12,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import android.widget.Switch
+
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -43,7 +45,9 @@ class SettingsActivity : AppCompatActivity() {
         val btnSavePassword = findViewById<Button>(R.id.btn_save_password)
 
         // Privacy / session views
-        val btnBlockedUsers      = findViewById<LinearLayout>(R.id.btn_blocked_users)
+        val btnBlockedUsers = findViewById<LinearLayout>(R.id.btn_blocked_users)
+        val toggleExactSearch = findViewById<Switch>(R.id.toggle_exact_name_search)
+        val tvExactSearchSubtitle = findViewById<TextView>(R.id.tv_exact_search_subtitle)
 
         // Load current email into the subtitle
         val uid = UserSession.currentUserId
@@ -52,6 +56,28 @@ class SettingsActivity : AppCompatActivity() {
                 .addOnSuccessListener { doc ->
                     val currentEmail = doc.getString("email") ?: ""
                     emailCurrentDisplay.text = currentEmail
+
+                    // exactNameSearch field defaults to false if not yet set
+                    val exactSearch = doc.getBoolean("exactNameSearch") ?: false
+                    toggleExactSearch.isChecked = exactSearch
+                    updateExactSearchSubtitle(tvExactSearchSubtitle, exactSearch)
+                }
+        }
+
+        // Exact Name Search toggle
+        toggleExactSearch.setOnCheckedChangeListener { _, isChecked ->
+            updateExactSearchSubtitle(tvExactSearchSubtitle, isChecked)
+            if (uid == null) return@setOnCheckedChangeListener
+            db.collection("users").document(uid)
+                .update("exactNameSearch", isChecked)
+                .addOnSuccessListener {
+                    Log.d(TAG, "exactNameSearch set to $isChecked")
+                }
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "Failed to update exactNameSearch", e)
+                    // Revert the toggle visually if the save failed
+                    toggleExactSearch.isChecked = !isChecked
+                    Toast.makeText(this, "Failed to save — try again", Toast.LENGTH_SHORT).show()
                 }
         }
 
@@ -251,5 +277,12 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
+    }
+    // Updates the subtitle text under the toggle to reflect current state
+    private fun updateExactSearchSubtitle(subtitle: TextView, isChecked: Boolean) {
+        subtitle.text = if (isChecked)
+            "Only appear when your full name is searched"
+        else
+            "Appear in all search results"
     }
 }

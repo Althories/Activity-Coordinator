@@ -1,94 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/create_account"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="32dp"
-    android:background="#0D0D14">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Create Account"
-        android:textColor="#FFFFFF"
-        android:textSize="28dp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Sign up to get started"
-        android:textColor="#8888A4"
-        android:textSize="14dp"
-        android:layout_marginBottom="40dp" />
-
-    <EditText
-        android:id="@+id/ca_name"
+    <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Full name"
-        android:inputType="textPersonName"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#8888A4"
-        android:backgroundTint="#2A2A38"
-        android:padding="14dp"
-        android:layout_marginBottom="16dp" />
+        android:layout_height="match_parent"
+        android:src="@drawable/login"
+        android:scaleType="centerCrop" />
 
-    <EditText
-        android:id="@+id/ca_email"
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#8888A4"
-        android:backgroundTint="#2A2A38"
-        android:padding="14dp"
-        android:layout_marginBottom="16dp" />
+        android:layout_height="match_parent"
+        android:background="#99000000" />
 
-    <EditText
-        android:id="@+id/ca_password"
+    <LinearLayout
+        android:id="@+id/create_account"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Password"
-        android:inputType="textPassword"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#8888A4"
-        android:backgroundTint="#2A2A38"
-        android:padding="14dp"
-        android:layout_marginBottom="8dp" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp">
 
-    <TextView
-        android:id="@+id/ca_error"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#FF5C5C"
-        android:textSize="13dp"
-        android:layout_marginBottom="24dp"
-        android:visibility="gone" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create Account"
+            android:textColor="#FFFFFF"
+            android:textSize="28dp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
 
-    <Button
-        android:id="@+id/ca_btn_create"
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:text="Create Account"
-        android:textColor="#FFFFFF"
-        android:textSize="15dp"
-        android:textStyle="bold"
-        android:backgroundTint="#FF5C5C"
-        android:layout_marginBottom="16dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sign up to get started"
+            android:textColor="#8888A4"
+            android:textSize="14dp"
+            android:layout_marginBottom="40dp" />
 
-    <!-- Tappable text to go back to login -->
-    <TextView
-        android:id="@+id/ca_btn_login"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Already have an account? Log in"
-        android:textColor="#8888A4"
-        android:textSize="13dp" />
+        <EditText
+            android:id="@+id/ca_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Full name"
+            android:inputType="textPersonName"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#8888A4"
+            android:backgroundTint="#2A2A38"
+            android:padding="14dp"
+            android:layout_marginBottom="16dp" />
 
-</LinearLayout>
+        <EditText
+            android:id="@+id/ca_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#8888A4"
+            android:backgroundTint="#2A2A38"
+            android:padding="14dp"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/ca_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#8888A4"
+            android:backgroundTint="#2A2A38"
+            android:padding="14dp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/ca_error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FF5C5C"
+            android:textSize="13dp"
+            android:layout_marginBottom="24dp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/ca_btn_create"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Create Account"
+            android:textColor="#FFFFFF"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:backgroundTint="#FF5C5C"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Tappable text to go back to login -->
+        <TextView
+            android:id="@+id/ca_btn_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Already have an account? Log in"
+            android:textColor="#8888A4"
+            android:textSize="13dp" />
+
+    </LinearLayout>
+</FrameLayout>
