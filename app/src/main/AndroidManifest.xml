@@ -24,6 +24,7 @@
         <activity android:name=".ProfileActivity" />
         <activity android:name=".FriendSearchActivity" />
         <activity android:name=".CreateAccountActivity" />
+        <activity android:name=".SettingsActivity" />
     </application>
 
 </manifest>

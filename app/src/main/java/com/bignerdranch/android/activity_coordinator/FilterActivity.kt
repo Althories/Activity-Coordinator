@@ -52,6 +52,9 @@ class FilterActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.nav_search).setOnClickListener {
             startActivity(Intent(this, FriendSearchActivity::class.java))
         }
+        findViewById<LinearLayout>(R.id.nav_settings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
 
         //Setup for recyclerView to do its magic. Initializes FriendAdapter as empty to be filled given user info
         recyclerView = findViewById(R.id.recycler_friends)

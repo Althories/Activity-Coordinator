@@ -79,19 +79,6 @@ class ProfileActivity : AppCompatActivity() {
         }
         ///                            Log.w("BHBDUIBHDIKBJ", temp.toString())
         ////                           val returned = csvToText("merge_dragons,cats,morger,music")
-        findViewById<Button>(R.id.btn_logout).setOnClickListener {
-            // Clear the user session
-            UserSession.currentUserId = null
-            // Go back to login and clear the back stack
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK //starts the activity in a fresh task, and FLAG_ACTIVITY_CLEAR_TASK wipes out every activity that was in the back stack
-            startActivity(intent) //launches MainActivity with the flags applied
-            finish() //Closes ProfileActivity
-
-        }
-
-
-
 
         // Hardcoded example user - to be replaced with currently logged-in user
         val user = hashMapOf(
@@ -311,6 +298,9 @@ class ProfileActivity : AppCompatActivity() {
         }
         findViewById<LinearLayout>(R.id.nav_search).setOnClickListener {
             startActivity(Intent(this, FriendSearchActivity::class.java))
+        }
+        findViewById<LinearLayout>(R.id.nav_settings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
 
         // Handles selecting an image from images and applying it to the profile picture.
