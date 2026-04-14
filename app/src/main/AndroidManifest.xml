@@ -26,6 +26,7 @@
         <activity android:name=".CreateAccountActivity" />
         <activity android:name=".SettingsActivity" />
         <activity android:name=".FriendProfileActivity" />
+        <activity android:name=".ScheduleActivity" />
     </application>
 
 </manifest>
