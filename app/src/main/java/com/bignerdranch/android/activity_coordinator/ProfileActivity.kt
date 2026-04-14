@@ -296,12 +296,12 @@ class ProfileActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.nav_filter).setOnClickListener {
             startActivity(Intent(this, FilterActivity::class.java))
         }
-
         findViewById<LinearLayout>(R.id.nav_search).setOnClickListener {
             startActivity(Intent(this, FriendSearchActivity::class.java))
         }
         findViewById<LinearLayout>(R.id.nav_settings).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
+        }
         findViewById<LinearLayout>(R.id.nav_schedule).setOnClickListener {
             startActivity(Intent(this, ScheduleActivity::class.java))
         }
@@ -372,7 +372,8 @@ class ProfileActivity : AppCompatActivity() {
                 dialog.show()
             }
         }
-        }
+    }
+
     fun getData(uid : String, names : Array<String>) {
         Log.w(TAG, "WE ran the function")
         //Log.w(TAG, "We ran the coroutine")

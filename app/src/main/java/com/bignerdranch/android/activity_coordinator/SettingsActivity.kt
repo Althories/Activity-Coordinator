@@ -277,7 +277,11 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
+        findViewById<LinearLayout>(R.id.nav_schedule).setOnClickListener {
+            startActivity(Intent(this, ScheduleActivity::class.java))
+        }
     }
+
     // Updates the subtitle text under the toggle to reflect current state
     private fun updateExactSearchSubtitle(subtitle: TextView, isChecked: Boolean) {
         subtitle.text = if (isChecked)

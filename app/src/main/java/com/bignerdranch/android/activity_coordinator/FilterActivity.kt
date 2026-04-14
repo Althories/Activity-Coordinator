@@ -54,6 +54,7 @@ class FilterActivity : AppCompatActivity() {
         }
         findViewById<LinearLayout>(R.id.nav_settings).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
+        }
         findViewById<LinearLayout>(R.id.nav_schedule).setOnClickListener {
             startActivity(Intent(this, ScheduleActivity::class.java))
         }
@@ -96,7 +97,8 @@ class FilterActivity : AppCompatActivity() {
                 .setDuration(300)
                 .withEndAction {
                     bottomSheet.visibility = android.view.View.GONE
-                    findViewById<LinearLayout>(R.id.nav_bar).visibility = android.view.View.VISIBLE
+                    findViewById<LinearLayout>(R.id.nav_bar).visibility =
+                        android.view.View.VISIBLE
 
                 }
                 .start()
