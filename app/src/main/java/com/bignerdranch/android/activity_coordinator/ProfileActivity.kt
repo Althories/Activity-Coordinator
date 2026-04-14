@@ -29,6 +29,8 @@ import com.google.firebase.storage.*
 import kotlin.collections.joinToString
 import kotlin.collections.take
 import kotlin.text.split
+import kotlinx.datetime.*
+import java.time.Instant
 
 
 class ProfileActivity : AppCompatActivity() {
@@ -52,6 +54,8 @@ class ProfileActivity : AppCompatActivity() {
         }
         ///                            Log.w("BHBDUIBHDIKBJ", temp.toString())
         ////                           val returned = csvToText("merge_dragons,cats,morger,music")
+        Log.w("---------------------------", "This ran")
+        test()
         findViewById<Button>(R.id.btn_logout).setOnClickListener {
             // Clear the user session
             UserSession.currentUserId = null
@@ -477,6 +481,14 @@ class ProfileActivity : AppCompatActivity() {
             currentRow!!.addView(chip)
             currentRowWidth += chipWidth
         }
+    }
+    fun test() {
+        val streeng_date = "2026-04-14"
+        val cdate = Instant.parse(LocalDate.parse(streeng_date).toEpochDays().toString())
+        Log.w("--------------","This also ran")
+        val tiem = Clock.System.now()
+        tiem.until(cdate,DateTimeUnit.MINUTE)
+        Log.w(TAG, tiem.toString()+tiem.toEpochMilliseconds())
     }
 
 
