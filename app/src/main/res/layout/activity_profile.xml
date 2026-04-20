@@ -198,6 +198,40 @@
                         android:focusableInTouchMode="false"
                         android:hint="What are you up to..."
                         android:textColorHint="#8888A4" />
+                    <LinearLayout
+                        android:id="@+id/time_check"
+                        android:layout_width = "match_parent"
+                        android:layout_height = "match_parent"
+                        android:orientation = "horizontal"
+                        android:visibility = "gone">
+                    <EditText
+                        android:id="@+id/time_hour"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:layout_marginRight="12dp"
+                        android:textColor="#8888A4"
+                        android:textSize="13sp"
+                        android:maxLines="1"
+                        android:inputType="text"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="Hours left"
+                        android:textColorHint="#8888A4" />
+                    <EditText
+                        android:id="@+id/time_min"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:textColor="#8888A4"
+                        android:textSize="13sp"
+                        android:maxLines="1"
+                        android:inputType="text"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="Minutes left"
+                        android:textColorHint="#8888A4" />
+                    </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/profile_chips_display"

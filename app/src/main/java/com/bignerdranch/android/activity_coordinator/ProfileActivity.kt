@@ -26,6 +26,12 @@ import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.*
 import java.util.Locale
 import com.google.firebase.storage.*
+import kotlinx.datetime.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+//import java.time.Instant
 import kotlin.collections.joinToString
 import kotlin.collections.take
 import kotlin.text.split
@@ -46,7 +52,7 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(R.layout.activity_profile)
 
         getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription","profileCurrentActivity"))
-
+        test()
             var catsExpanded = false
             var activitiesExpanded = false
 
@@ -114,7 +120,9 @@ class ProfileActivity : AppCompatActivity() {
             findViewById<EditText>(R.id.profileName),
             findViewById<EditText>(R.id.profileLocation),
             findViewById<EditText>(R.id.profileDescription),
-            findViewById<EditText>(R.id.profileCurrentActivity)
+            findViewById<EditText>(R.id.profileCurrentActivity),
+            findViewById<EditText>(R.id.time_hour),
+            findViewById<EditText>(R.id.time_min)
 
 
         )
@@ -135,6 +143,8 @@ class ProfileActivity : AppCompatActivity() {
         val editButton = findViewById<Button>(R.id.edit_profile_button)
         //Controls whether EditViews are editable. editing boolean has the same T/F state as isEditing
         fun applyEditState(editing: Boolean) {
+            findViewById<LinearLayout>(R.id.time_check).visibility =
+                if (editing) android.view.View.VISIBLE else android.view.View.GONE
             editableFields.forEach { field ->
                 field.isFocusableInTouchMode = editing
                 field.isFocusable = editing
@@ -146,7 +156,8 @@ class ProfileActivity : AppCompatActivity() {
             findViewById<LinearLayout>(R.id.cats_section_header).visibility =
                 if (editing) android.view.View.VISIBLE else android.view.View.GONE
             findViewById<LinearLayout>(R.id.interest_picker_section).visibility =
-                if (editing) android.view.View.GONE else android.view.View.GONE
+                if (editing) android.view.View.GONE else android.view.View.GONE //todo This line doesnt do anything
+
             if (editing) {
                 catsExpanded = false
                 catsContent.visibility = android.view.View.GONE
@@ -763,6 +774,21 @@ class ProfileActivity : AppCompatActivity() {
             if (editing) container.addView(inputRow)
         }
     }
-
+    fun test(){
+        val x= 2
+        val tiem = LocalDateTime(2026,4,17,10,24,0,0)
+        val past = LocalDateTime(1985,12,21,6,34,2,0)
+        val currentTime = Clock.System.now()
+        val current2 = currentTime.plus(x, DateTimeUnit.MINUTE)
+        val thing = tiem.toInstant(TimeZone.currentSystemDefault()) - currentTime
+        val thing2 = past.toInstant(TimeZone.currentSystemDefault()) - currentTime
+        if(thing.isNegative())
+            //delete
+            Log.w("please don't hate me", "no hate please")
+        Log.w(TAG, currentTime.toString())
+        Log.w(TAG, "$tiem $thing $thing2")
+        val thing3 = Instant.parse("2026-04-17T19:42:52.615602Z")
+        //I hate when malicious hacker inject nanoseconds into my birthday
+    }
 
 }
