@@ -54,7 +54,7 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(R.layout.activity_profile)
 
         getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription","profileCurrentActivity","currentMin"))
-        test()
+        //test()
             var catsExpanded = false
             var activitiesExpanded = false
 

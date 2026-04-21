@@ -26,6 +26,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.Instant
 import kotlinx.datetime.plus
+import kotlin.collections.get
 
 class FilterActivity : AppCompatActivity() {
 
@@ -135,49 +136,10 @@ class FilterActivity : AppCompatActivity() {
                     (friendIdsRaw as? List<*>)?.map { it.toString() } ?: emptyList()
 
                 if (friendIdStrings.isNotEmpty()) {
-                    for(friendID in friendIdStrings) //todo fix minor flow issue
-                        time_check(friendID)
+                    for(index in friendIdStrings.indices)
+                        time_check(index, friendIdStrings)
 
-                    db.collection("users")
-                        .whereIn(FieldPath.documentId(), friendIdStrings)
-                        .get()
-                        .addOnSuccessListener { documents ->
-                            //Convert Firestore documents to Friend objects to be processed by FriendAdapter.kt
-                            val friendsList = documents.map { doc ->
-                                Friend(
-                                    id = doc.id,
-                                    name = doc.getString("profileName") ?: "Unknown",
-                                    categories = (doc.get("categories") as? List<String>)
-                                        ?: emptyList(), //Adjustment to handle categories as an Array in Firestore
-                                    location = doc.getString("profileLocation")
-                                        ?: "Unknown Location",
-                                    bio = doc.getString("profileDescription") ?: "No bio provided",
-                                    currentActivity = doc.getString("profileCurrentActivity") ?: ""
-                                )
-                            }
 
-                            //Filtering logic. Determines what to show based on selected filters
-                            val filteredFriends = if (activeFilters.isEmpty()) {
-                                friendsList
-                            } else {
-                                //Check if any of the friend's categories match the active filters
-                                friendsList.filter { friend ->
-                                    activeFilters.any { filter ->
-                                        friend.categories.any {
-                                            it.equals(
-                                                filter,
-                                                ignoreCase = true
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                            //Update the UI based on filter results
-                            displayFriends(filteredFriends)
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("FIRESTORE_DEBUG", "Query Failed!", e)
-                        }
                 } else {
                     Log.w("FIRESTORE_DEBUG", "Friend list is empty in DB.")
                     displayFriends(emptyList()) //User has no friends
@@ -347,7 +309,8 @@ class FilterActivity : AppCompatActivity() {
     //get the current selected filters for profile matching
     fun getActiveFilters(): Set<String> = activeFilters.toSet()
 
-    fun time_check(uid: String) {
+    fun time_check(index: Int, friendIdStrings: List<String>) {
+        val uid = friendIdStrings[index]
         db.collection("users").document(uid).get()
             .addOnSuccessListener { userDoc ->
 
@@ -401,11 +364,57 @@ class FilterActivity : AppCompatActivity() {
                             "var_dump",
                             "mins: $mins hours: $hours current: $current now: $now raw: $raw"
                         )
+                        if (index == friendIdStrings.lastIndex){
+                            good_function(friendIdStrings)
+                        }
 
 
                     }
 
 
+            }
+    }
+    fun good_function(friendIdStrings : List<String>){
+        db.collection("users")
+            .whereIn(FieldPath.documentId(), friendIdStrings)
+            .get()
+            .addOnSuccessListener { documents ->
+                //Convert Firestore documents to Friend objects to be processed by FriendAdapter.kt
+
+                val friendsList = documents.map { doc ->
+                    Friend(
+                        id = doc.id,
+                        name = doc.getString("profileName") ?: "Unknown",
+                        categories = (doc.get("categories") as? List<String>)
+                            ?: emptyList(), //Adjustment to handle categories as an Array in Firestore
+                        location = doc.getString("profileLocation")
+                            ?: "Unknown Location",
+                        bio = doc.getString("profileDescription") ?: "No bio provided",
+                        currentActivity = doc.getString("profileCurrentActivity") ?: ""
+                    )
+                }
+
+                //Filtering logic. Determines what to show based on selected filters
+                val filteredFriends = if (activeFilters.isEmpty()) {
+                    friendsList
+                } else {
+                    //Check if any of the friend's categories match the active filters
+                    friendsList.filter { friend ->
+                        activeFilters.any { filter ->
+                            friend.categories.any {
+                                it.equals(
+                                    filter,
+                                    ignoreCase = true
+                                )
+                            }
+                        }
+                    }
+                }
+                //Update the UI based on filter results
+                displayFriends(filteredFriends)
+            }
+            .addOnFailureListener { e ->
+                Log.e("FIRESTORE_DEBUG", "Query Failed!", e)
             }
     }
 }
