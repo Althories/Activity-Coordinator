@@ -9,6 +9,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.firestore
 import android.content.Intent
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
@@ -35,6 +36,7 @@ import kotlinx.datetime.toInstant
 import kotlin.collections.joinToString
 import kotlin.collections.take
 import kotlin.text.split
+import kotlin.toString
 
 
 class ProfileActivity : AppCompatActivity() {
@@ -289,7 +291,8 @@ class ProfileActivity : AppCompatActivity() {
                                 "profileLocation", (findViewById<EditText>(R.id.profileLocation).text).toString(),
                                 "profileDescription", (findViewById<EditText>(R.id.profileDescription).text).toString(),
                                 "profileCurrentActivity", (findViewById<EditText>(R.id.profileCurrentActivity).text).toString(),
-                                "currentMin", current_tiem
+                                "currentMin", current_tiem,
+                                "currentTime", Clock.System.now().toString()
                             )
 
                             .addOnSuccessListener {
@@ -400,18 +403,29 @@ class ProfileActivity : AppCompatActivity() {
         val returnable = names.clone()
         db.collection("users").document(uid).get()
             .addOnSuccessListener { userDoc ->
-                for (x in names.indices)
-                    returnable[x] = userDoc.get(names[x])?.toString() ?: ""
+                for (x in names.indices){
+                    Log.w("for ref", names[x])
+                    Log.w("grrrrrrrr", userDoc.get(names[x]).toString())
+                    if(x==4)
+                        returnable[4] = userDoc.get(names[x]).toString()
+                    else
+                        returnable[x] = userDoc.get(names[x])?.toString() ?: ""
+                   }
                 if(returnable[0] == "null") returnable[0] = "Your name here"
 
                 findViewById<EditText>(R.id.profileName).setText(returnable[0])
                 findViewById<EditText>(R.id.profileLocation).setText(returnable[1])
                 findViewById<EditText>(R.id.profileDescription).setText(returnable[2])
                 try{
-                findViewById<EditText>(R.id.time_hour).setText(returnable[4].toInt() / 60)
-                findViewById<EditText>(R.id.time_min).setText(returnable[4].toInt() % 60)}
+                    findViewById<EditText>(R.id.time_hour).setText((returnable[4].toInt() / 60).toString())
+                    findViewById<EditText>(R.id.time_min).setText((returnable[4].toInt() % 60).toString())}
                 catch ( e : NumberFormatException){
                     Log.w("Error", e.toString())
+                    Log.w("Error", returnable[4])
+                }
+                catch ( e : Resources.NotFoundException){
+                    Log.w("Error", e.toString())
+                    Log.w("Error", returnable[4])
                 }
 
 
@@ -431,6 +445,7 @@ class ProfileActivity : AppCompatActivity() {
                 findViewById<Button>(R.id.avatar_1).setText(returnable[0].split(" ").take(2).joinToString(""){ it.first().uppercase() } )
 
                 Log.w(TAG, "We have docs")
+                time_check(uid.toString())
             }
 
         Log.w(TAG, "We got out of the loop")
@@ -806,5 +821,42 @@ class ProfileActivity : AppCompatActivity() {
         val thing3 = Instant.parse("2026-04-17T19:42:52.615602Z")
         //I hate when malicious hacker inject nanoseconds into my birthday
     }
+    fun time_check(uid : String){
+        val mins = try {findViewById<EditText>(R.id.time_min).text.toString().toInt()}
+        catch (e : NumberFormatException) {0}
+        val hours = try {findViewById<EditText>(R.id.time_hour).text.toString().toInt()}
+        catch (e : NumberFormatException) {0}
 
-}
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { userDoc ->
+                val raw = userDoc.get("currentTime").toString()
+
+                var current = if( raw == "null" || raw == "0") Instant.parse("2021-04-17T19:42:52.615602Z")
+                        else(Instant.parse(raw))
+                current = current.plus(mins,DateTimeUnit.MINUTE)
+                current = current.plus(hours,DateTimeUnit.HOUR)
+                val now = Clock.System.now()
+                Log.w("times", current.toString())
+                Log.w("times", (current-now).toString() )
+                if ((current-now).isNegative()){
+                    db.document("users/$uid").update("currentTime", 0,"currentMin", 0, "profileCurrentActivity", "")
+                    findViewById<EditText>(R.id.time_min).setText("0")
+                    findViewById<EditText>(R.id.time_hour).setText("0")
+                    findViewById<EditText>(R.id.profileCurrentActivity).setText("")
+                    for (field in arrayOf("currentTime","currentMin","profileCurrentActivity")){
+
+                    Log.w("DeleteCurrentActivity", field)}
+
+                        }
+
+                Log.w("var_dump","mins: $mins hours: $hours current: $current now: $now raw: $raw" )
+
+            }
+
+
+
+            }
+
+    }
+
+

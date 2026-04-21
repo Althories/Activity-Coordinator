@@ -17,9 +17,15 @@ import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.Filter
 import kotlinx.coroutines.tasks.await
 import android.content.Intent
+import android.content.res.Resources
 import android.view.View
+import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FieldPath
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
+import kotlinx.datetime.plus
 
 class FilterActivity : AppCompatActivity() {
 
@@ -107,7 +113,8 @@ class FilterActivity : AppCompatActivity() {
     }
 
     private fun updateProfiles() {
-        val uid = UserSession.currentUserId //Fetches ID from UserSession object to prevent data loss upon switching activities
+        val uid =
+            UserSession.currentUserId //Fetches ID from UserSession object to prevent data loss upon switching activities
 
         if (uid == null) { //If the app process was killed, return to login
             startActivity(Intent(this, MainActivity::class.java))
@@ -124,9 +131,13 @@ class FilterActivity : AppCompatActivity() {
 
                 //Fetches friend user ID array from logged in user's document
                 val friendIdsRaw = userDoc.get("friends")
-                val friendIdStrings = (friendIdsRaw as? List<*>)?.map { it.toString() } ?: emptyList()
+                val friendIdStrings =
+                    (friendIdsRaw as? List<*>)?.map { it.toString() } ?: emptyList()
 
                 if (friendIdStrings.isNotEmpty()) {
+                    for(friendID in friendIdStrings) //todo fix minor flow issue
+                        time_check(friendID)
+
                     db.collection("users")
                         .whereIn(FieldPath.documentId(), friendIdStrings)
                         .get()
@@ -136,8 +147,10 @@ class FilterActivity : AppCompatActivity() {
                                 Friend(
                                     id = doc.id,
                                     name = doc.getString("profileName") ?: "Unknown",
-                                    categories = (doc.get("categories") as? List<String>) ?: emptyList(), //Adjustment to handle categories as an Array in Firestore
-                                    location = doc.getString("profileLocation") ?: "Unknown Location",
+                                    categories = (doc.get("categories") as? List<String>)
+                                        ?: emptyList(), //Adjustment to handle categories as an Array in Firestore
+                                    location = doc.getString("profileLocation")
+                                        ?: "Unknown Location",
                                     bio = doc.getString("profileDescription") ?: "No bio provided",
                                     currentActivity = doc.getString("profileCurrentActivity") ?: ""
                                 )
@@ -150,7 +163,12 @@ class FilterActivity : AppCompatActivity() {
                                 //Check if any of the friend's categories match the active filters
                                 friendsList.filter { friend ->
                                     activeFilters.any { filter ->
-                                        friend.categories.any { it.equals(filter, ignoreCase = true) }
+                                        friend.categories.any {
+                                            it.equals(
+                                                filter,
+                                                ignoreCase = true
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -166,13 +184,24 @@ class FilterActivity : AppCompatActivity() {
                 }
             }
     }
-//creates filter chips and handles selection logic (coloring)
+
+    //creates filter chips and handles selection logic (coloring)
     private fun setupChips() {
         val container = findViewById<LinearLayout>(R.id.chip_container)
         container.removeAllViews()
         // Use categories from session or fallback list (used for testing, fallback should never be seen but might prevent crashes if something goes wrong)
         val categories = UserSession.allCategories.ifEmpty {
-            listOf("Music","Hiking","Cooking","Gaming","Reading","Travel","Merge Dragons","Coding","Disc Golf")
+            listOf(
+                "Music",
+                "Hiking",
+                "Cooking",
+                "Gaming",
+                "Reading",
+                "Travel",
+                "Merge Dragons",
+                "Coding",
+                "Disc Golf"
+            )
         }
 
         val dp = resources.displayMetrics.density
@@ -203,7 +232,10 @@ class FilterActivity : AppCompatActivity() {
             chip.layoutParams = chipLp
             // Measure chip width to wrap rows properly
             chip.measure(
-                View.MeasureSpec.makeMeasureSpec(screenWidth - horizontalPadding, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(
+                    screenWidth - horizontalPadding,
+                    View.MeasureSpec.AT_MOST
+                ),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
             )
             val chipWidth = chip.measuredWidth + chipLp.marginEnd
@@ -233,17 +265,20 @@ class FilterActivity : AppCompatActivity() {
                 }
                 updateActiveFilterRow()
                 // Update button text
-                btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
+                btnApplyFilter.text =
+                    if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
             }
 
             currentRow!!.addView(chip)
             currentRowWidth += chipWidth
         }
     }
+
     //Helper function to updateProfile(). Calls friendAdapter to update the UI based on filter results
     private fun displayFriends(friends: List<Friend>) {
         friendAdapter.updateData(friends)
-        ResultCount.text = if (activeFilters.isEmpty()) "All friends" else "${friends.size} matches found"
+        ResultCount.text =
+            if (activeFilters.isEmpty()) "All friends" else "${friends.size} matches found"
     }
 
     private fun updateActiveFilterRow() {
@@ -256,7 +291,8 @@ class FilterActivity : AppCompatActivity() {
         }
 
         scrollActiveFilters.visibility = android.view.View.VISIBLE
-        ResultCount.text = "${activeFilters.size} filter${if (activeFilters.size > 1) "s" else ""} active"
+        ResultCount.text =
+            "${activeFilters.size} filter${if (activeFilters.size > 1) "s" else ""} active"
 
         val dp = resources.displayMetrics.density
 
@@ -271,7 +307,10 @@ class FilterActivity : AppCompatActivity() {
                 (10 * dp).toInt(), (6 * dp).toInt(),
                 (10 * dp).toInt(), (6 * dp).toInt()
             )
-            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
             lp.marginEnd = (8 * dp).toInt()
             pill.layoutParams = lp
 
@@ -298,7 +337,8 @@ class FilterActivity : AppCompatActivity() {
                 }
                 updateActiveFilterRow()
                 updateProfiles()
-                btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
+                btnApplyFilter.text =
+                    if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
             }
             layoutActiveFilters.addView(pill)
         }
@@ -306,4 +346,66 @@ class FilterActivity : AppCompatActivity() {
 
     //get the current selected filters for profile matching
     fun getActiveFilters(): Set<String> = activeFilters.toSet()
+
+    fun time_check(uid: String) {
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { userDoc ->
+
+                val mins = try {
+                    userDoc.get("currentMin").toString().toInt() / 60
+                } catch (e: NumberFormatException) {
+                    Log.w("Error", e.toString())
+                    Log.w("Error", userDoc.get("currentMin").toString())
+                    0
+                }
+                val hours = try {
+                    userDoc.get("currentMin").toString().toInt() % 60
+                } catch (e: NumberFormatException) {
+                    Log.w("Error", e.toString())
+                    Log.w("Error", userDoc.get("currentMin").toString())
+                    0
+                }
+                db.collection("users").document(uid).get()
+                    .addOnSuccessListener { userDoc ->
+                        val raw = userDoc.get("currentTime").toString()
+
+                        var current =
+                            if (raw == "null" || raw == "0") Instant.parse("2021-04-17T19:42:52.615602Z")
+                            else (Instant.parse(raw))
+                        current = current.plus(mins, DateTimeUnit.MINUTE)
+                        current = current.plus(hours, DateTimeUnit.HOUR)
+                        val now = Clock.System.now()
+                        Log.w("times", current.toString())
+                        Log.w("times", (current - now).toString())
+                        if ((current - now).isNegative()) {
+                            db.document("users/$uid").update(
+                                "currentTime",
+                                0,
+                                "currentMin",
+                                0,
+                                "profileCurrentActivity",
+                                ""
+                            )
+                            for (field in arrayOf(
+                                "currentTime",
+                                "currentMin",
+                                "profileCurrentActivity"
+                            )) {
+
+                                Log.w("DeleteCurrentActivity", field)
+                            }
+
+                        }
+
+                        Log.w(
+                            "var_dump",
+                            "mins: $mins hours: $hours current: $current now: $now raw: $raw"
+                        )
+
+
+                    }
+
+
+            }
+    }
 }
