@@ -51,7 +51,7 @@ class ProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
-        getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription","profileCurrentActivity"))
+        getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription","profileCurrentActivity","currentMin"))
         test()
             var catsExpanded = false
             var activitiesExpanded = false
@@ -269,6 +269,12 @@ class ProfileActivity : AppCompatActivity() {
 
                     changedPfp = false // reset flag
                 }
+                val current_tiem = try {
+                    findViewById<EditText>(R.id.time_hour).text.toString().toInt()*60+findViewById<EditText>(R.id.time_min).text.toString().toInt()}
+                catch(e : NumberFormatException){
+                    0
+                }
+
 
                 // Update the database with the new profile information.
                 db.collection("users")
@@ -282,7 +288,8 @@ class ProfileActivity : AppCompatActivity() {
                             .update("profileName", (findViewById<EditText>(R.id.profileName).text).toString(),
                                 "profileLocation", (findViewById<EditText>(R.id.profileLocation).text).toString(),
                                 "profileDescription", (findViewById<EditText>(R.id.profileDescription).text).toString(),
-                                "profileCurrentActivity", (findViewById<EditText>(R.id.profileCurrentActivity).text).toString()
+                                "profileCurrentActivity", (findViewById<EditText>(R.id.profileCurrentActivity).text).toString(),
+                                "currentMin", current_tiem
                             )
 
                             .addOnSuccessListener {
@@ -396,9 +403,18 @@ class ProfileActivity : AppCompatActivity() {
                 for (x in names.indices)
                     returnable[x] = userDoc.get(names[x])?.toString() ?: ""
                 if(returnable[0] == "null") returnable[0] = "Your name here"
+
                 findViewById<EditText>(R.id.profileName).setText(returnable[0])
                 findViewById<EditText>(R.id.profileLocation).setText(returnable[1])
                 findViewById<EditText>(R.id.profileDescription).setText(returnable[2])
+                try{
+                findViewById<EditText>(R.id.time_hour).setText(returnable[4].toInt() / 60)
+                findViewById<EditText>(R.id.time_min).setText(returnable[4].toInt() % 60)}
+                catch ( e : NumberFormatException){
+                    Log.w("Error", e.toString())
+                }
+
+
                 val activityLabel = findViewById<TextView>(R.id.current_activity_label)
                 val activityField = findViewById<EditText>(R.id.profileCurrentActivity)
                 //logic to hide current profile activity if not specified
