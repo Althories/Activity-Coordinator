@@ -31,6 +31,7 @@ class FriendAdapter(
         val categoriesContainer: LinearLayout = view.findViewById(R.id.friend_interests_container)
         val actionButton: Button = view.findViewById(R.id.btn_add_friend) //Add friend button w/visibility dependent on circumstances
         val viewProfileLabel: TextView = view.findViewById(R.id.btn_view_profile)
+        val optionsButtonContainer: LinearLayout = view.findViewById(R.id.options_container)
     }
 
     //Called when the RecyclerView needs a new card layout. It inflates the item_friend.xml and wraps it in a FriendViewHolder
@@ -131,6 +132,8 @@ class FriendAdapter(
                 holder.actionButton.text = "✓ Added"
                 holder.actionButton.isEnabled = false
             }
+            holder.optionsButtonContainer.setPadding(24,36,36,12)
+
         } else {
             holder.actionButton.visibility = View.GONE //Not on the search activity, hide the add friend button
             holder.viewProfileLabel.visibility = View.VISIBLE
@@ -142,6 +145,7 @@ class FriendAdapter(
             }
             holder.itemView.setOnClickListener { openProfile() }
             holder.viewProfileLabel.setOnClickListener { openProfile() }
+            holder.optionsButtonContainer.setPadding(12,16,12,12)
         }
 
         // Set friend profile picture

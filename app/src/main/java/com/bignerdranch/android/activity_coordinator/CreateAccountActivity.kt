@@ -95,7 +95,8 @@ class CreateAccountActivity : AppCompatActivity() {
                                 "categories" to emptyList<String>(),
                                 "profileLocation" to "",
                                 "profileDescription" to "",
-                                "friends" to emptyList<String>()
+                                "friends" to emptyList<String>(),
+                                "blockList" to emptyList<String>()
                             )
                             // Name the document with the nextUid
                             db.collection("users")

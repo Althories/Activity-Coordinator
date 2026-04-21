@@ -75,6 +75,21 @@
                 android:text="Location" />
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/options_container"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:id="@+id/options_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="@drawable/round_more_vert_24"
+                />
+
+        </LinearLayout>
+
+
         <Button
             android:id="@+id/btn_add_friend"
             android:layout_width="wrap_content"
@@ -85,7 +100,7 @@
             android:backgroundTint="#2ECC71"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <!-- Arrow pinned to top-right corner of the card -->
         <TextView

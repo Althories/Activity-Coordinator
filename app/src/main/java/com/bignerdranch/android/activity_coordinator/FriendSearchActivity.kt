@@ -61,6 +61,7 @@ class FriendSearchActivity : AppCompatActivity() {
         db.collection("users").document(currentUid).get()
             .addOnSuccessListener { userDoc ->
                 val myFriends = userDoc.get("friends") as? List<String> ?: emptyList()
+                val myBlockList = userDoc.get("blockList") as? List<String> ?: emptyList()
 
                 db.collection("users").get()
                     .addOnSuccessListener { allDocs ->
@@ -70,8 +71,14 @@ class FriendSearchActivity : AppCompatActivity() {
                         for (doc in allDocs) {
                             val uid = doc.id
 
+                            // Don't show user if they have the logged-in user blocked
+                            if ((doc.get("blockList") as? List<String> ?: emptyList()).contains(UserSession.currentUserId)) {
+                                continue
+                            }
+
                             //Only show if not current user and not already a friend in friends field of current user
-                            if (uid != currentUid && !myFriends.contains(uid)) {
+                            // and not blocked
+                            if (uid != currentUid && !myFriends.contains(uid) && !myBlockList.contains(uid)) {
                                 allUsersFromDb.add(Friend(
                                     id = uid,
                                     pfp = UserSession.getPfp(uid),
