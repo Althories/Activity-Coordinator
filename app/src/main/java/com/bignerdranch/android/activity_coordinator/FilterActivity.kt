@@ -351,14 +351,14 @@ class FilterActivity : AppCompatActivity() {
         db.collection("users").document(uid).get()
             .addOnSuccessListener { userDoc ->
 
-                val mins = try {
+                val hours = try {
                     userDoc.get("currentMin").toString().toInt() / 60
                 } catch (e: NumberFormatException) {
                     Log.w("Error", e.toString())
                     Log.w("Error", userDoc.get("currentMin").toString())
                     0
                 }
-                val hours = try {
+                val mins = try {
                     userDoc.get("currentMin").toString().toInt() % 60
                 } catch (e: NumberFormatException) {
                     Log.w("Error", e.toString())
