@@ -9,6 +9,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.firestore
 import android.content.Intent
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
@@ -26,9 +27,16 @@ import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.*
 import java.util.Locale
 import com.google.firebase.storage.*
+import kotlinx.datetime.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+//import java.time.Instant
 import kotlin.collections.joinToString
 import kotlin.collections.take
 import kotlin.text.split
+import kotlin.toString
 
 
 class ProfileActivity : AppCompatActivity() {
@@ -45,8 +53,8 @@ class ProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
-        getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription","profileCurrentActivity"))
-
+        getData(uid.toString(),arrayOf("profileName","profileLocation","profileDescription","profileCurrentActivity","currentMin"))
+        //test()
             var catsExpanded = false
             var activitiesExpanded = false
 
@@ -114,7 +122,9 @@ class ProfileActivity : AppCompatActivity() {
             findViewById<EditText>(R.id.profileName),
             findViewById<EditText>(R.id.profileLocation),
             findViewById<EditText>(R.id.profileDescription),
-            findViewById<EditText>(R.id.profileCurrentActivity)
+            findViewById<EditText>(R.id.profileCurrentActivity),
+            findViewById<EditText>(R.id.time_hour),
+            findViewById<EditText>(R.id.time_min)
 
 
         )
@@ -135,6 +145,8 @@ class ProfileActivity : AppCompatActivity() {
         val editButton = findViewById<Button>(R.id.edit_profile_button)
         //Controls whether EditViews are editable. editing boolean has the same T/F state as isEditing
         fun applyEditState(editing: Boolean) {
+            findViewById<LinearLayout>(R.id.time_check).visibility =
+                if (editing) android.view.View.VISIBLE else android.view.View.GONE
             editableFields.forEach { field ->
                 field.isFocusableInTouchMode = editing
                 field.isFocusable = editing
@@ -146,7 +158,8 @@ class ProfileActivity : AppCompatActivity() {
             findViewById<LinearLayout>(R.id.cats_section_header).visibility =
                 if (editing) android.view.View.VISIBLE else android.view.View.GONE
             findViewById<LinearLayout>(R.id.interest_picker_section).visibility =
-                if (editing) android.view.View.GONE else android.view.View.GONE
+                if (editing) android.view.View.GONE else android.view.View.GONE //todo This line doesnt do anything
+
             if (editing) {
                 catsExpanded = false
                 catsContent.visibility = android.view.View.GONE
@@ -258,6 +271,12 @@ class ProfileActivity : AppCompatActivity() {
 
                     changedPfp = false // reset flag
                 }
+                val current_tiem = try {
+                    findViewById<EditText>(R.id.time_hour).text.toString().toInt()*60+findViewById<EditText>(R.id.time_min).text.toString().toInt()}
+                catch(e : NumberFormatException){
+                    0
+                }
+
 
                 // Update the database with the new profile information.
                 db.collection("users")
@@ -271,7 +290,9 @@ class ProfileActivity : AppCompatActivity() {
                             .update("profileName", (findViewById<EditText>(R.id.profileName).text).toString(),
                                 "profileLocation", (findViewById<EditText>(R.id.profileLocation).text).toString(),
                                 "profileDescription", (findViewById<EditText>(R.id.profileDescription).text).toString(),
-                                "profileCurrentActivity", (findViewById<EditText>(R.id.profileCurrentActivity).text).toString()
+                                "profileCurrentActivity", (findViewById<EditText>(R.id.profileCurrentActivity).text).toString(),
+                                "currentMin", current_tiem,
+                                "currentTime", Clock.System.now().toString()
                             )
 
                             .addOnSuccessListener {
@@ -382,12 +403,32 @@ class ProfileActivity : AppCompatActivity() {
         val returnable = names.clone()
         db.collection("users").document(uid).get()
             .addOnSuccessListener { userDoc ->
-                for (x in names.indices)
-                    returnable[x] = userDoc.get(names[x])?.toString() ?: ""
+                for (x in names.indices){
+                    Log.w("for ref", names[x])
+                    Log.w("grrrrrrrr", userDoc.get(names[x]).toString())
+                    if(x==4)
+                        returnable[4] = userDoc.get(names[x]).toString()
+                    else
+                        returnable[x] = userDoc.get(names[x])?.toString() ?: ""
+                   }
                 if(returnable[0] == "null") returnable[0] = "Your name here"
+
                 findViewById<EditText>(R.id.profileName).setText(returnable[0])
                 findViewById<EditText>(R.id.profileLocation).setText(returnable[1])
                 findViewById<EditText>(R.id.profileDescription).setText(returnable[2])
+                try{
+                    findViewById<EditText>(R.id.time_hour).setText((returnable[4].toInt() / 60).toString())
+                    findViewById<EditText>(R.id.time_min).setText((returnable[4].toInt() % 60).toString())}
+                catch ( e : NumberFormatException){
+                    Log.w("Error", e.toString())
+                    Log.w("Error", returnable[4])
+                }
+                catch ( e : Resources.NotFoundException){
+                    Log.w("Error", e.toString())
+                    Log.w("Error", returnable[4])
+                }
+
+
                 val activityLabel = findViewById<TextView>(R.id.current_activity_label)
                 val activityField = findViewById<EditText>(R.id.profileCurrentActivity)
                 //logic to hide current profile activity if not specified
@@ -404,6 +445,7 @@ class ProfileActivity : AppCompatActivity() {
                 findViewById<Button>(R.id.avatar_1).setText(returnable[0].split(" ").take(2).joinToString(""){ it.first().uppercase() } )
 
                 Log.w(TAG, "We have docs")
+                time_check(uid.toString())
             }
 
         Log.w(TAG, "We got out of the loop")
@@ -763,6 +805,58 @@ class ProfileActivity : AppCompatActivity() {
             if (editing) container.addView(inputRow)
         }
     }
+    fun test(){
+        val x= 2
+        val tiem = LocalDateTime(2026,4,17,10,24,0,0)
+        val past = LocalDateTime(1985,12,21,6,34,2,0)
+        val currentTime = Clock.System.now()
+        val current2 = currentTime.plus(x, DateTimeUnit.MINUTE)
+        val thing = tiem.toInstant(TimeZone.currentSystemDefault()) - currentTime
+        val thing2 = past.toInstant(TimeZone.currentSystemDefault()) - currentTime
+        if(thing.isNegative())
+            //delete
+            Log.w("please don't hate me", "no hate please")
+        Log.w(TAG, currentTime.toString())
+        Log.w(TAG, "$tiem $thing $thing2")
+        val thing3 = Instant.parse("2026-04-17T19:42:52.615602Z")
+        //I hate when malicious hacker inject nanoseconds into my birthday
+    }
+    fun time_check(uid : String){
+        val mins = try {findViewById<EditText>(R.id.time_min).text.toString().toInt()}
+        catch (e : NumberFormatException) {0}
+        val hours = try {findViewById<EditText>(R.id.time_hour).text.toString().toInt()}
+        catch (e : NumberFormatException) {0}
+
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { userDoc ->
+                val raw = userDoc.get("currentTime").toString()
+
+                var current = if( raw == "null" || raw == "0") Instant.parse("2021-04-17T19:42:52.615602Z")
+                        else(Instant.parse(raw))
+                current = current.plus(mins,DateTimeUnit.MINUTE)
+                current = current.plus(hours,DateTimeUnit.HOUR)
+                val now = Clock.System.now()
+                Log.w("times", current.toString())
+                Log.w("times", (current-now).toString() )
+                if ((current-now).isNegative()){
+                    db.document("users/$uid").update("currentTime", 0,"currentMin", 0, "profileCurrentActivity", "")
+                    findViewById<EditText>(R.id.time_min).setText("0")
+                    findViewById<EditText>(R.id.time_hour).setText("0")
+                    findViewById<EditText>(R.id.profileCurrentActivity).setText("")
+                    for (field in arrayOf("currentTime","currentMin","profileCurrentActivity")){
+
+                    Log.w("DeleteCurrentActivity", field)}
+
+                        }
+
+                Log.w("var_dump","mins: $mins hours: $hours current: $current now: $now raw: $raw" )
+
+            }
 
 
-}
+
+            }
+
+    }
+
+
