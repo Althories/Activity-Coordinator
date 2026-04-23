@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -36,8 +35,18 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, CreateAccountActivity::class.java))
         }
 
+        // Get EVERY user's profile picture.
+        // Downloads every single user's profile picture if it isn't already downloaded,
+        // so not ideal. But FriendAdapter already loads all friends, so.
+        db.collection("users").get()
+            .addOnSuccessListener { allDocs ->
+                for (doc in allDocs) {
+                    UserSession.getPfp(doc.id)
+                }
+            }
+
         btnLogin.setOnClickListener {
-            val emailInput = emailField.text.toString().trim()
+            val emailInput = emailField.text.toString().trim().lowercase()
             val passwordInput = passwordField.text.toString().trim()
 
             //Ensures user actually entered content for both input fields
@@ -60,15 +69,18 @@ class MainActivity : AppCompatActivity() {
                         val document = documents.documents[0] //Grabs first result from firestone query. Ideally this is the only result
                         val dbPassword = document.getString("password") //Fetches db password to compare with input
 
-                        if (dbPassword == passwordInput) {  //Passwords match, user may login
+                        if (dbPassword == passwordInput) {
                             val loggedInId = document.id
-                            UserSession.currentUserId = loggedInId //Logged in user saved globally to prevent issues
-                            UserSession.getUserPfp() // Load profile picture - Branden
-                            val intent = Intent(this, FilterActivity::class.java)
-                            intent.putExtra("USER_ID", loggedInId) //Sent to FilterActivity to display correct friends list on boot
-
-                            startActivity(intent)
-                            finish()
+                            UserSession.currentUserId = loggedInId
+                            UserSession.getPfp()
+                            UserSession.fetchCategories(db) {
+                                runOnUiThread { // makes sure that the filter menu populates before running app
+                                    val intent = Intent(this, FilterActivity::class.java)
+                                    intent.putExtra("USER_ID", loggedInId)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                            }
                         } else { //passwords did not match, womp womp
                             errorText.text = "Invalid password entered"
                             errorText.visibility = View.VISIBLE

@@ -32,7 +32,7 @@ class CreateAccountActivity : AppCompatActivity() {
         }
         //on clicking create button do basici verification of info
         btnCreate.setOnClickListener {
-            val email = etEmail.text.toString().trim()
+            val email = etEmail.text.toString().trim().lowercase()
             val password = etPassword.text.toString().trim()
             val name = etName.text.toString().trim()
 
@@ -105,6 +105,7 @@ class CreateAccountActivity : AppCompatActivity() {
                                     Log.d(TAG, "New user created with document ID: $nextUid")
                                     // Store the numeric ID string in UserSession
                                     UserSession.currentUserId = nextUid.toString()
+                                    UserSession.fetchCategories(db) //get all categories
                                     // Update the globals doc with the new UID in the list
                                     db.collection("globals")
                                         .document("7Us0uNh9dpMsg2vyaPLW")

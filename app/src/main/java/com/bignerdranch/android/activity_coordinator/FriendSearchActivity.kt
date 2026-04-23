@@ -25,7 +25,6 @@ class FriendSearchActivity : AppCompatActivity() {
     private lateinit var btnClearSearch: Button
     private lateinit var layoutNoResults: LinearLayout
     private lateinit var recyclerView: RecyclerView
-    private val allCategories = listOf("Music", "Hiking", "Gaming", "Reading", "Merge Dragons", "Cooking", "Travel", "Coding", "Disc Golf") //TODO replace with db query
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,10 +74,12 @@ class FriendSearchActivity : AppCompatActivity() {
                             if (uid != currentUid && !myFriends.contains(uid)) {
                                 allUsersFromDb.add(Friend(
                                     id = uid,
+                                    pfp = UserSession.getPfp(uid),
                                     name = doc.getString("profileName") ?: "Unknown",
                                     location = doc.getString("profileLocation") ?: "Unknown Location",
                                     bio = doc.getString("profileDescription") ?: "",
-                                    categories = doc.get("categories") as? List<String> ?: emptyList()
+                                    categories = doc.get("categories") as? List<String> ?: emptyList(),
+                                    exactNameSearch = doc.getBoolean("exactNameSearch") ?: false
                                 ))
                             }
                         }
@@ -108,6 +109,12 @@ class FriendSearchActivity : AppCompatActivity() {
 
         //Filters master list of users based on both text search and chip selection
         val filtered = allUsersFromDb.filter { user ->
+            // Privacy check: if the user has exactNameSearch on, they only appear
+            // when the search query exactly matches their full name (case-insensitive).
+            // If the query is empty or only partial, they are hidden entirely.
+            if (user.exactNameSearch) {
+                if (query != user.name.lowercase()) return@filter false
+            }
             val matchesText = query.isEmpty() ||
                     user.name.lowercase().contains(query) ||
                     user.categories.any { it.lowercase().contains(query) }
@@ -129,7 +136,10 @@ class FriendSearchActivity : AppCompatActivity() {
 
     private fun buildInterestChips() {
         val container = findViewById<LinearLayout>(R.id.layout_search_chips)
-        allCategories.forEach { label ->
+        val categories = UserSession.allCategories.ifEmpty {
+            listOf("Music","Hiking","Cooking","Gaming","Reading","Travel","Merge Dragons","Coding","Disc Golf")
+        }
+        categories.forEach { label ->
             val chip = TextView(this)
             chip.text = label
             chip.setTextColor(Color.parseColor("#8888A4"))
@@ -178,8 +188,15 @@ class FriendSearchActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.nav_filter).setOnClickListener {
             startActivity(Intent(this, FilterActivity::class.java))
         }
+        findViewById<LinearLayout>(R.id.nav_schedule).setOnClickListener {
+            startActivity(Intent(this, ScheduleActivity::class.java))
+        }
         findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
+        findViewById<LinearLayout>(R.id.nav_settings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
     }
 }

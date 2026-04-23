@@ -1,10 +1,12 @@
 package com.bignerdranch.android.activity_coordinator
 
+import android.content.Intent
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -21,10 +23,14 @@ class FriendAdapter(
     class FriendViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.friend_name)
         val avatar: TextView = view.findViewById(R.id.friend_avatar)
+        val pfp: ImageView = view.findViewById(R.id.friend_pfp)
         val bio: TextView = view.findViewById(R.id.friend_bio)
+        val currentActivityLabel: TextView = view.findViewById(R.id.friend_current_activity_label)
+        val currentActivity: TextView = view.findViewById(R.id.friend_current_activity)
         val location: TextView = view.findViewById(R.id.friend_location)
         val categoriesContainer: LinearLayout = view.findViewById(R.id.friend_interests_container)
         val actionButton: Button = view.findViewById(R.id.btn_add_friend) //Add friend button w/visibility dependent on circumstances
+        val viewProfileLabel: TextView = view.findViewById(R.id.btn_view_profile)
     }
 
     //Called when the RecyclerView needs a new card layout. It inflates the item_friend.xml and wraps it in a FriendViewHolder
@@ -44,28 +50,67 @@ class FriendAdapter(
         holder.avatar.text = friend.name.split(" ").take(2).joinToString("") { it.first().uppercase() }
         holder.location.text = friend.location
         holder.bio.text = friend.bio
+        holder.currentActivity.text = friend.currentActivity
+        if (friend.currentActivity.isEmpty() || friend.currentActivity == "null") {
+            holder.currentActivityLabel.visibility = View.GONE
+            holder.currentActivity.visibility = View.GONE
+        } else {
+            holder.currentActivityLabel.visibility = View.VISIBLE
+            holder.currentActivity.visibility = View.VISIBLE
+        }
 
         //All of the shit for category chips
-        holder.categoriesContainer.removeAllViews() //Clears the container cache because recyclerview needs to recycle
-        friend.categories.forEach { category -> //Loop through the friend's categories
+        holder.categoriesContainer.removeAllViews()
+        holder.categoriesContainer.orientation = LinearLayout.VERTICAL
+
+        val screenWidth = context.resources.displayMetrics.widthPixels
+        val containerWidth = screenWidth - (64 * dp).toInt() // // Adjust for padding so chips don't overflow outside card
+        var currentRow: LinearLayout? = null
+        var currentRowWidth = 0
+        var rowCount = 0
+
+        friend.categories.forEach { category ->
+            // Create a chip dynamically
             val chip = TextView(context)
-            //XML equivalent applications to be done for each chip
-            chip.text = category
+            chip.text = category.replaceFirstChar { it.uppercase() }
             chip.setTextColor(Color.parseColor("#8888A4"))
             chip.textSize = 11f
+            chip.isSingleLine = true
+            chip.maxLines = 1
             chip.setBackgroundColor(Color.parseColor("#0D0D14"))
-            val paddingSide = (9 * dp).toInt()
-            val paddingTopBottom = (5 * dp).toInt()
-            chip.setPadding(paddingSide, paddingTopBottom, paddingSide, paddingTopBottom)
-            //Spacing between chips
-            val params = LinearLayout.LayoutParams(
+            // Padding inside chip
+            chip.setPadding((9 * dp).toInt(), (5 * dp).toInt(), (9 * dp).toInt(), (5 * dp).toInt())
+            // Layout params for spacing between chips
+            val chipLp = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
-            params.setMargins(0, 0, (7 * dp).toInt(), 0)
-            chip.layoutParams = params
-            //Finish by adding chip to the horizontal layout
-            holder.categoriesContainer.addView(chip)
+            chipLp.marginEnd = (7 * dp).toInt()
+            chip.layoutParams = chipLp
+            // measure() calculates how wide the chip WILL be BEFORE it's added to layout
+            // This allows us to manually wrap chips into rows
+            chip.measure(
+                View.MeasureSpec.makeMeasureSpec(containerWidth, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            val chipWidth = chip.measuredWidth + chipLp.marginEnd
+
+            if (currentRow == null || currentRowWidth + chipWidth > containerWidth) {
+                // Limit to max 2 rows of chips
+                if (rowCount >= 2) return@forEach //@... like continue
+                currentRow = LinearLayout(context)
+                currentRow!!.orientation = LinearLayout.HORIZONTAL // !! tells system that that isnt going to be null, gave me issues without it for some reason idk
+                val rowLp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                rowLp.bottomMargin = (4 * dp).toInt()
+                currentRow!!.layoutParams = rowLp
+                // Add new row to container
+                holder.categoriesContainer.addView(currentRow)
+                currentRowWidth = 0
+                rowCount++
+            }
+            // Add chip to current row
+            currentRow!!.addView(chip)
+            currentRowWidth += chipWidth
         }
 
         //"Add friend" button tracking for the UI
@@ -80,6 +125,7 @@ class FriendAdapter(
         if (isSearchMode) {
             holder.actionButton.visibility = View.VISIBLE
             holder.actionButton.text = "+ Add"
+            holder.actionButton.isEnabled = true //CRITICAL re-enable add button if user intends to add multiple friends in one go
             holder.actionButton.setOnClickListener {
                 onAddClick?.invoke(friend)
                 holder.actionButton.text = "✓ Added"
@@ -87,7 +133,19 @@ class FriendAdapter(
             }
         } else {
             holder.actionButton.visibility = View.GONE //Not on the search activity, hide the add friend button
+            holder.viewProfileLabel.visibility = View.VISIBLE
+
+            val openProfile: () -> Unit = { // gets the uid of the card tapped
+                val intent = Intent(context, FriendProfileActivity::class.java)
+                intent.putExtra("FRIEND_ID", friend.id)
+                context.startActivity(intent)
+            }
+            holder.itemView.setOnClickListener { openProfile() }
+            holder.viewProfileLabel.setOnClickListener { openProfile() }
         }
+
+        // Set friend profile picture
+        holder.pfp.setImageBitmap(UserSession.getPfp(friend.id))
     }
 
     override fun getItemCount() = friends.size //Tells the RecyclerView how many total items are in a user's friends list

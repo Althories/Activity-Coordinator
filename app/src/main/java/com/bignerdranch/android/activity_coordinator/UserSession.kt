@@ -10,27 +10,73 @@ import com.google.firebase.storage.storage
 object UserSession {
     //This variable stays alive as long as the app process is running
     var currentUserId: String? = null
+    var userName = "Yup" //Used by ScheduledEvent to show who invited you to an event. Lazy solution
 
     // vv Branden
-    var pfp: Bitmap? = null
+    // Maps user IDs to bitmaps
+    var loadedPfps: MutableMap<Int, Bitmap> = mutableMapOf()
 
     const val MAX_PFP_SIZE = 200
     val storage = Firebase.storage // Firebase cloud storage, where all picture assets live
 
-    // Download the user's profile picture from storage and save it as a variable here
-    // idk if i should be using an intent for this but it works
-    fun getUserPfp() {
-        if (currentUserId == null) {
-            return
-        }
-        val pfpRef = storage.reference.child(
-            "userProfilePictures/$currentUserId.jpg")
-        pfpRef.getBytes((MAX_PFP_SIZE * MAX_PFP_SIZE + 100).toLong())
-            .addOnSuccessListener { bytes ->
-                pfp = (BitmapFactory
-                    .decodeByteArray(bytes, 0, bytes.size))
-            }.addOnFailureListener { e ->
-                Log.w("UserSession","Failed to fetch profile pic", e)
+    // Master category list fetched once from Firestore globals doc
+    var allCategories: List<String> = emptyList()
+
+    // Call this once at login to populate allCategories
+    fun fetchCategories(db: com.google.firebase.firestore.FirebaseFirestore, onDone: (() -> Unit)? = null) {
+        db.collection("globals").document("vXvJg3evjdr3Eom0xi11").get()
+            .addOnSuccessListener { doc ->
+                @Suppress("UNCHECKED_CAST")
+                allCategories = (doc.get("categories") as? List<String>) ?: emptyList()
+                onDone?.invoke()
             }
     }
+
+    // Returns a given user's profile picture as bitmap. If it isn't saved, download it.
+    // Defaults to the currently logged in user.
+    fun getPfp(uid: String? = null): Bitmap? {
+        // default variable is immutable so i need a mutable one
+        var uidToFetch: Int
+        var returnedPfp: Bitmap? = null
+        // By default we should use the current user's id
+        if (uid == null) {
+            if (currentUserId == null) {
+                return null
+            }
+            uidToFetch = currentUserId!!.toInt()
+        } else { // otherwise use what was inputted
+            uidToFetch = uid.toInt()
+        }
+        // if the pfp is already loaded dont bother fetching it
+        if (uidToFetch in loadedPfps) {
+            return loadedPfps[uidToFetch]
+        } else {
+            val pfpRef = storage.reference.child(
+                "userProfilePictures/$uidToFetch.jpg"
+            )
+            pfpRef.getBytes((100000).toLong()) // Hardcoded to 100kb
+                .addOnSuccessListener { bytes ->
+                    returnedPfp = (BitmapFactory
+                        .decodeByteArray(bytes, 0, bytes.size))
+                    if (returnedPfp != null) {
+                        loadedPfps[uidToFetch] = returnedPfp
+                    }
+                    Log.d("UserSession", "Loaded $uidToFetch.jpg")
+                }.addOnFailureListener { // -> e {
+                    Log.w("UserSession", "Failed to fetch $uidToFetch.jpg")//, e)
+                }
+            return returnedPfp
+        }
+    }
+
+    // Update given loaded user's pfp with a given bitmap.
+    // By default, update the logged in user.
+    fun updatePfpLocally(img: Bitmap, uid: String? = null) {
+        if (uid == null) {
+            loadedPfps[currentUserId!!.toInt()] = img
+        } else {
+            loadedPfps[uid.toInt()] = img
+        }
+    }
+
 }

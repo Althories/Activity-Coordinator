@@ -17,8 +17,16 @@ import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.Filter
 import kotlinx.coroutines.tasks.await
 import android.content.Intent
+import android.content.res.Resources
+import android.view.View
+import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FieldPath
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
+import kotlinx.datetime.plus
+import kotlin.collections.get
 
 class FilterActivity : AppCompatActivity() {
 
@@ -50,6 +58,12 @@ class FilterActivity : AppCompatActivity() {
         }
         findViewById<LinearLayout>(R.id.nav_search).setOnClickListener {
             startActivity(Intent(this, FriendSearchActivity::class.java))
+        }
+        findViewById<LinearLayout>(R.id.nav_settings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+        findViewById<LinearLayout>(R.id.nav_schedule).setOnClickListener {
+            startActivity(Intent(this, ScheduleActivity::class.java))
         }
 
         //Setup for recyclerView to do its magic. Initializes FriendAdapter as empty to be filled given user info
@@ -90,7 +104,8 @@ class FilterActivity : AppCompatActivity() {
                 .setDuration(300)
                 .withEndAction {
                     bottomSheet.visibility = android.view.View.GONE
-                    findViewById<LinearLayout>(R.id.nav_bar).visibility = android.view.View.VISIBLE
+                    findViewById<LinearLayout>(R.id.nav_bar).visibility =
+                        android.view.View.VISIBLE
 
                 }
                 .start()
@@ -99,7 +114,8 @@ class FilterActivity : AppCompatActivity() {
     }
 
     private fun updateProfiles() {
-        val uid = UserSession.currentUserId //Fetches ID from UserSession object to prevent data loss upon switching activities
+        val uid =
+            UserSession.currentUserId //Fetches ID from UserSession object to prevent data loss upon switching activities
 
         if (uid == null) { //If the app process was killed, return to login
             startActivity(Intent(this, MainActivity::class.java))
@@ -116,41 +132,14 @@ class FilterActivity : AppCompatActivity() {
 
                 //Fetches friend user ID array from logged in user's document
                 val friendIdsRaw = userDoc.get("friends")
-                val friendIdStrings = (friendIdsRaw as? List<*>)?.map { it.toString() } ?: emptyList()
+                val friendIdStrings =
+                    (friendIdsRaw as? List<*>)?.map { it.toString() } ?: emptyList()
 
                 if (friendIdStrings.isNotEmpty()) {
-                    db.collection("users")
-                        .whereIn(FieldPath.documentId(), friendIdStrings)
-                        .get()
-                        .addOnSuccessListener { documents ->
-                            //Convert Firestore documents to Friend objects to be processed by FriendAdapter.kt
-                            val friendsList = documents.map { doc ->
-                                Friend(
-                                    id = doc.id,
-                                    name = doc.getString("profileName") ?: "Unknown",
-                                    categories = (doc.get("categories") as? List<String>) ?: emptyList(), //Adjustment to handle categories as an Array in Firestore
-                                    location = doc.getString("profileLocation") ?: "Unknown Location",
-                                    bio = doc.getString("profileDescription") ?: "No bio provided"
-                                )
-                            }
+                    for(index in friendIdStrings.indices)
+                        time_check(index, friendIdStrings)
 
-                            //Filtering logic. Determines what to show based on selected filters
-                            val filteredFriends = if (activeFilters.isEmpty()) {
-                                friendsList
-                            } else {
-                                //Check if any of the friend's categories match the active filters
-                                friendsList.filter { friend ->
-                                    activeFilters.any { filter ->
-                                        friend.categories.any { it.equals(filter, ignoreCase = true) }
-                                    }
-                                }
-                            }
-                            //Update the UI based on filter results
-                            displayFriends(filteredFriends)
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("FIRESTORE_DEBUG", "Query Failed!", e)
-                        }
+
                 } else {
                     Log.w("FIRESTORE_DEBUG", "Friend list is empty in DB.")
                     displayFriends(emptyList()) //User has no friends
@@ -158,122 +147,274 @@ class FilterActivity : AppCompatActivity() {
             }
     }
 
+    //creates filter chips and handles selection logic (coloring)
     private fun setupChips() {
-        // Maps each chip's view ID to the interest label it represents
-        val chips = mapOf(
-            R.id.chip_music   to "Music",
-            R.id.chip_hiking  to "Hiking",
-            R.id.chip_cooking to "Cooking",
-            R.id.chip_gaming  to "Gaming",
-            R.id.chip_reading to "Reading",
-            R.id.chip_travel  to "Travel",
-            R.id.chip_merge_dragons    to "Merge Dragons",
-            R.id.chip_coding  to "Coding",
-            R.id.chip_disc_golf to "Disc Golf"
-        )
-        // Loop through every chip and attach a click listener to each one
-        chips.forEach { (chipId, label) ->
-            val chip = findViewById<TextView>(chipId)
+        val container = findViewById<LinearLayout>(R.id.chip_container)
+        container.removeAllViews()
+        // Use categories from session or fallback list (used for testing, fallback should never be seen but might prevent crashes if something goes wrong)
+        val categories = UserSession.allCategories.ifEmpty {
+            listOf(
+                "Music",
+                "Hiking",
+                "Cooking",
+                "Gaming",
+                "Reading",
+                "Travel",
+                "Merge Dragons",
+                "Coding",
+                "Disc Golf"
+            )
+        }
+
+        val dp = resources.displayMetrics.density
+        val screenWidth = resources.displayMetrics.widthPixels
+        val horizontalPadding = (48 * dp).toInt() // 24dp padding each side from bottom sheet
+
+        var currentRow: LinearLayout? = null
+        var currentRowWidth = 0
+        // Create chip (TextView styled as button)
+        categories.forEach { label ->
+            val chip = TextView(this)
+            chip.text = label.replaceFirstChar { it.uppercase() }
+            chip.setTextColor(Color.parseColor("#8888A4"))
+            chip.setBackgroundColor(Color.parseColor("#16161F"))
+            chip.textSize = 13f
+            chip.isSingleLine = true
+            chip.maxLines = 1
+            chip.tag = label
+            val px14 = (14 * dp).toInt()
+            val px9 = (9 * dp).toInt()
+            chip.setPadding(px14, px9, px14, px9)
+            // Layout params for spacing
+            val chipLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            chipLp.marginEnd = (10 * dp).toInt()
+            chip.layoutParams = chipLp
+            // Measure chip width to wrap rows properly
+            chip.measure(
+                View.MeasureSpec.makeMeasureSpec(
+                    screenWidth - horizontalPadding,
+                    View.MeasureSpec.AT_MOST
+                ),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            val chipWidth = chip.measuredWidth + chipLp.marginEnd
+            // Start new row if needed
+            if (currentRow == null || currentRowWidth + chipWidth > screenWidth - horizontalPadding) {
+                currentRow = LinearLayout(this)
+                currentRow!!.orientation = LinearLayout.HORIZONTAL
+                val rowLp = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                rowLp.bottomMargin = (10 * dp).toInt()
+                currentRow!!.layoutParams = rowLp
+                container.addView(currentRow)
+                currentRowWidth = 0
+            }
+            // Handle chip click (toggle selection)
             chip.setOnClickListener {
                 if (label in activeFilters) {
-                    // Already selected, deselect it and reset to gray
                     activeFilters.remove(label)
                     chip.setTextColor(Color.parseColor("#8888A4"))
                     chip.setBackgroundColor(Color.parseColor("#16161F"))
                 } else {
-                    // Not selected — select it and highlight green
                     activeFilters.add(label)
                     chip.setTextColor(Color.parseColor("#2ECC71"))
                     chip.setBackgroundColor(Color.parseColor("#222ECC71"))
                 }
-                // Rebuild the active filter pills row to reflect the new state
                 updateActiveFilterRow()
-                // filter apply button is dynamic based on if filters are selected
-                btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
-
+                // Update button text
+                btnApplyFilter.text =
+                    if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
             }
+
+            currentRow!!.addView(chip)
+            currentRowWidth += chipWidth
         }
     }
 
     //Helper function to updateProfile(). Calls friendAdapter to update the UI based on filter results
     private fun displayFriends(friends: List<Friend>) {
         friendAdapter.updateData(friends)
-        ResultCount.text = if (activeFilters.isEmpty()) "All friends" else "${friends.size} matches found"
+        ResultCount.text =
+            if (activeFilters.isEmpty()) "All friends" else "${friends.size} matches found"
     }
 
     private fun updateActiveFilterRow() {
-        // Remove all existing pills before rebuilding the row
         layoutActiveFilters.removeAllViews()
 
         if (activeFilters.isEmpty()) {
-            // No filters active, hide the pill row and reset the subtitle
             scrollActiveFilters.visibility = android.view.View.GONE
             ResultCount.text = "All friends"
             return
         }
 
         scrollActiveFilters.visibility = android.view.View.VISIBLE
-        // Update subtitle to show how many filters are active
-        ResultCount.text = "${activeFilters.size} filter${if (activeFilters.size > 1) "s" else ""} active"
+        ResultCount.text =
+            "${activeFilters.size} filter${if (activeFilters.size > 1) "s" else ""} active"
 
         val dp = resources.displayMetrics.density
 
         activeFilters.forEach { label ->
             val pill = TextView(this)
-            // Show the label with an X so the user knows they can tap to remove it
-
-            pill.text     = "$label  ⓧ"
+            pill.text = "$label  ⓧ"
             pill.textSize = 12f
             pill.setTypeface(null, Typeface.BOLD)
-            // Style the pill green to match the selected chip color
             pill.setTextColor(Color.parseColor("#2ECC71"))
             pill.setBackgroundColor(Color.parseColor("#222ECC71"))
-            // Add horizontal and vertical padding around the pill text
             pill.setPadding(
                 (10 * dp).toInt(), (6 * dp).toInt(),
                 (10 * dp).toInt(), (6 * dp).toInt()
             )
-
             val lp = LinearLayout.LayoutParams(
-                // Set layout params with a right margin so pills don't touch each other
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
             lp.marginEnd = (8 * dp).toInt()
             pill.layoutParams = lp
 
-            // tapping a pill removes that filter
             pill.setOnClickListener {
                 activeFilters.remove(label)
-                // also deselect the chip in the sheet
-                val chipId = when (label) {
-                    "Music"   -> R.id.chip_music
-                    "Hiking"  -> R.id.chip_hiking
-                    "Cooking" -> R.id.chip_cooking
-                    "Gaming"  -> R.id.chip_gaming
-                    "Reading" -> R.id.chip_reading
-                    "Travel"  -> R.id.chip_travel
-                    "Merge Dragons" -> R.id.chip_merge_dragons
-                    "Coding"  -> R.id.chip_coding
-                    "Disc Golf" -> R.id.chip_disc_golf
-                    else      -> null
+                // Find the chip by tag and reset its color
+                val container = findViewById<LinearLayout>(R.id.chip_container)
+                // Loop through each row inside the container
+                // container.childCount = number of rows
+                for (i in 0 until container.childCount) {
+                    // Each child of container should be a LinearLayout (a row of chips)
+                    // Safe cast (as?) is used in case something unexpected is in the container
+                    // If casting fails (null), skip this iteration with 'continue'
+                    val row = container.getChildAt(i) as? LinearLayout ?: continue
+                    // Loop through each chip inside the current row
+                    // row.childCount = number of chips in that row
+                    for (j in 0 until row.childCount) {
+                        val chip = row.getChildAt(j) as? TextView
+                        if (chip?.tag == label) {
+                            chip.setTextColor(Color.parseColor("#8888A4"))
+                            chip.setBackgroundColor(Color.parseColor("#16161F"))
+                        }
+                    }
                 }
-                // Reset the chip in the sheet back to unselected gray
-                chipId?.let { id ->
-                    findViewById<TextView>(id).setTextColor(Color.parseColor("#8888A4"))
-                    findViewById<TextView>(id).setBackgroundColor(Color.parseColor("#16161F"))
-                }
-                // Rebuild the pill row now that one filter was removed
                 updateActiveFilterRow()
                 updateProfiles()
-                btnApplyFilter.text = if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
+                btnApplyFilter.text =
+                    if (activeFilters.isEmpty()) "Show All Friends" else "Show Matches"
             }
-            // Add the finished pill into the horizontal scroll container
             layoutActiveFilters.addView(pill)
-
         }
     }
 
     //get the current selected filters for profile matching
     fun getActiveFilters(): Set<String> = activeFilters.toSet()
+
+    fun time_check(index: Int, friendIdStrings: List<String>) {
+        val uid = friendIdStrings[index]
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { userDoc ->
+
+                val hours = try {
+                    userDoc.get("currentMin").toString().toInt() / 60
+                } catch (e: NumberFormatException) {
+                    Log.w("Error", e.toString())
+                    Log.w("Error", userDoc.get("currentMin").toString())
+                    0
+                }
+                val mins = try {
+                    userDoc.get("currentMin").toString().toInt() % 60
+                } catch (e: NumberFormatException) {
+                    Log.w("Error", e.toString())
+                    Log.w("Error", userDoc.get("currentMin").toString())
+                    0
+                }
+                db.collection("users").document(uid).get()
+                    .addOnSuccessListener { userDoc ->
+                        val raw = userDoc.get("currentTime").toString()
+
+                        var current =
+                            if (raw == "null" || raw == "0") Instant.parse("2021-04-17T19:42:52.615602Z")
+                            else (Instant.parse(raw))
+                        current = current.plus(mins, DateTimeUnit.MINUTE)
+                        current = current.plus(hours, DateTimeUnit.HOUR)
+                        val now = Clock.System.now()
+                        Log.w("times", current.toString())
+                        Log.w("times", (current - now).toString())
+                        if ((current - now).isNegative()) {
+                            db.document("users/$uid").update(
+                                "currentTime",
+                                0,
+                                "currentMin",
+                                0,
+                                "profileCurrentActivity",
+                                ""
+                            )
+                            for (field in arrayOf(
+                                "currentTime",
+                                "currentMin",
+                                "profileCurrentActivity"
+                            )) {
+
+                                Log.w("DeleteCurrentActivity", field)
+                            }
+
+                        }
+
+                        Log.w(
+                            "var_dump",
+                            "mins: $mins hours: $hours current: $current now: $now raw: $raw"
+                        )
+                        if (index == friendIdStrings.lastIndex){
+                            good_function(friendIdStrings)
+                        }
+
+
+                    }
+
+
+            }
+    }
+    fun good_function(friendIdStrings : List<String>){
+        db.collection("users")
+            .whereIn(FieldPath.documentId(), friendIdStrings)
+            .get()
+            .addOnSuccessListener { documents ->
+                //Convert Firestore documents to Friend objects to be processed by FriendAdapter.kt
+
+                val friendsList = documents.map { doc ->
+                    Friend(
+                        id = doc.id,
+                        name = doc.getString("profileName") ?: "Unknown",
+                        categories = (doc.get("categories") as? List<String>)
+                            ?: emptyList(), //Adjustment to handle categories as an Array in Firestore
+                        location = doc.getString("profileLocation")
+                            ?: "Unknown Location",
+                        bio = doc.getString("profileDescription") ?: "No bio provided",
+                        currentActivity = doc.getString("profileCurrentActivity") ?: ""
+                    )
+                }
+
+                //Filtering logic. Determines what to show based on selected filters
+                val filteredFriends = if (activeFilters.isEmpty()) {
+                    friendsList
+                } else {
+                    //Check if any of the friend's categories match the active filters
+                    friendsList.filter { friend ->
+                        activeFilters.any { filter ->
+                            friend.categories.any {
+                                it.equals(
+                                    filter,
+                                    ignoreCase = true
+                                )
+                            }
+                        }
+                    }
+                }
+                //Update the UI based on filter results
+                displayFriends(filteredFriends)
+            }
+            .addOnFailureListener { e ->
+                Log.e("FIRESTORE_DEBUG", "Query Failed!", e)
+            }
+    }
 }

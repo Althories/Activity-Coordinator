@@ -15,16 +15,40 @@
         android:gravity="center_vertical"
         android:layout_marginBottom="10dp">
 
-        <TextView
-            android:id="@+id/friend_avatar"
+        <!-- Avatar circle -->
+        <FrameLayout
             android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:gravity="center"
-            android:textColor="#FFFFFF"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:background="#FF5C5C"
-            android:text="x" />
+            android:layout_height="52dp" >
+            <TextView
+                android:id="@+id/friend_avatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#FF5C5C"
+                android:gravity="center"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="A"
+                android:textColor="#FFFFFF"
+                android:textSize="17dp"
+                android:textStyle="bold"
+                android:padding="0dp" />
+            <!--
+            Contains the actual profile picture
+            Invisible (no source or background) if pfp doesnt exist
+            - Branden
+            -->
+            <ImageView
+                android:id="@+id/friend_pfp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#0000"
+                android:src="#0000"
+                android:scaleType="centerCrop"
+                android:gravity="center"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -61,7 +85,24 @@
             android:backgroundTint="#2ECC71"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
-            android:visibility="gone" /> </LinearLayout>
+            android:visibility="gone" />
+
+        <!-- Arrow pinned to top-right corner of the card -->
+        <TextView
+            android:id="@+id/btn_view_profile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:text="➡"
+            android:textColor="#8888A4"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="0dp"
+            android:paddingBottom="0dp"
+            android:visibility="gone" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/friend_bio"
@@ -72,11 +113,30 @@
         android:maxLines="2"
         android:text="User bio goes here..." />
 
+    <TextView
+        android:id="@+id/friend_current_activity_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="I Am Currently:"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="2dp" />
+
+    <TextView
+        android:id="@+id/friend_current_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#8888A4"
+        android:textSize="13sp"
+        android:text="" />
+
     <LinearLayout
         android:id="@+id/friend_interests_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="10dp" />
+
 
 </LinearLayout>

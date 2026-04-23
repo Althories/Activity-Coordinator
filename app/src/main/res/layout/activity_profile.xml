@@ -10,241 +10,429 @@
     android:background="#0D0D14"
     tools:context=".FilterActivity">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:orientation="vertical">
-
-    <!-- TOP BAR  –  title + filter button -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="48dp"
-        android:paddingBottom="12dp">
-
-        <!-- Title block -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="User Profile"
-                android:textColor="#FFFFFF"
-                android:textSize="20dp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#8888A4"
-                android:textSize="12dp"
-                android:text="How your profile appears in search" />
-
-        </LinearLayout>
-
-        <!-- Edit button -->
-        <Button
-            android:id="@+id/edit_profile_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Edit"
-            android:textColor="#FFFFFF"
-            android:textSize="16dp"
-            android:backgroundTint="#2A2A38" />
-
-        <Button
-            android:id="@+id/btn_logout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Log Out"
-            android:textColor="#FFFFFF"
-            android:textSize="13dp"
-            android:backgroundTint="#FF5C5C"
-            android:layout_marginStart="8dp" />
-
-
-    </LinearLayout>
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="8dp">
+            android:orientation="vertical">
 
-            <!-- DUMMY CARD 1,for real data-->
+            <!-- TOP BAR -->
             <LinearLayout
-                android:id="@+id/card_person_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="48dp"
+                android:paddingBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="User Profile"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/profile_subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#8888A4"
+                        android:textSize="12sp"
+                        android:text="How your profile appears to others" />
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/edit_profile_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Edit"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:backgroundTint="#2A2A38" />
+
+
+
+            </LinearLayout>
+
+            <!-- PROFILE CARD -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="#16161F"
-                android:padding="18dp"
-                android:layout_marginBottom="14dp">
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
 
-                <!-- Header: avatar, name/town, match % -->
                 <LinearLayout
+                    android:id="@+id/card_person_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="#16161F"
+                    android:padding="18dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="10dp">
+
+                        <FrameLayout
+                            android:layout_width="52dp"
+                            android:layout_height="52dp">
+
+                            <Button
+                                android:id="@+id/avatar_1"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="#FF5C5C"
+                                android:gravity="center"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:text="XD"
+                                android:textColor="#FFFFFF"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:padding="0dp"
+                                android:focusable="false"
+                                android:focusableInTouchMode="false"
+                                app:iconPadding="0dp" />
+
+                            <ImageView
+                                android:id="@+id/pfp"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="#0000"
+                                android:src="#0000"
+                                android:scaleType="centerCrop"
+                                android:padding="0dp" />
+
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:paddingStart="14dp">
+
+                            <EditText
+                                android:id="@+id/profileName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#FFFFFF"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:inputType="text"
+                                android:focusable="false"
+                                android:focusableInTouchMode="false"
+                                android:hint="Enter name, age..."
+                                android:textColorHint="#FFFFFF"
+                                android:text="Name" />
+
+                            <EditText
+                                android:id="@+id/profileLocation"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#8888A4"
+                                android:textSize="12sp"
+                                android:inputType="text"
+                                android:focusable="false"
+                                android:focusableInTouchMode="false"
+                                android:hint="Enter Location..."
+                                android:textColorHint="#8888A4"
+                                android:text="Enter Location..." />
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <EditText
+                        android:id="@+id/profileDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"
+                        android:textColor="#8888A4"
+                        android:textSize="13sp"
+                        android:maxLines="6"
+                        android:inputType="textMultiLine"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="Enter bio..."
+                        android:textColorHint="#8888A4"
+                        android:text="Enter bio..." />
+
+                    <TextView
+                        android:id="@+id/current_activity_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="I Am Currently:"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="2dp" />
+
+                    <EditText
+                        android:id="@+id/profileCurrentActivity"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:textColor="#8888A4"
+                        android:textSize="13sp"
+                        android:maxLines="1"
+                        android:inputType="text"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="What are you up to..."
+                        android:textColorHint="#8888A4" />
+                    <LinearLayout
+                        android:id="@+id/time_check"
+                        android:layout_width = "match_parent"
+                        android:layout_height = "match_parent"
+                        android:orientation = "horizontal"
+                        android:visibility = "gone">
+                    <EditText
+                        android:id="@+id/time_hour"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:layout_marginRight="12dp"
+                        android:textColor="#8888A4"
+                        android:textSize="13sp"
+                        android:maxLines="1"
+                        android:inputType="text"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="Hours left"
+                        android:textColorHint="#8888A4" />
+                    <EditText
+                        android:id="@+id/time_min"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:textColor="#8888A4"
+                        android:textSize="13sp"
+                        android:maxLines="1"
+                        android:inputType="text"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="Minutes left"
+                        android:textColorHint="#8888A4" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/profile_chips_display"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- EDIT-ONLY SECTIONS (hidden when not editing)-->
+            <LinearLayout
+                android:id="@+id/edit_sections_wrapper"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="2dp"
+                android:visibility="gone">
+
+                <!-- INTERESTS (Categories) SECTION -->
+
+                <!-- Collapsible header for Interests -->
+                <LinearLayout
+                    android:id="@+id/cats_section_header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="0dp">
+                    android:background="#16161F"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:layout_marginTop="8dp"
+                    android:clickable="true"
+                    android:focusable="true">
 
-                    <!-- Avatar circle -->
-                    <FrameLayout
-                        android:layout_width="52dp"
-                        android:layout_height="52dp" >
-                        <Button
-                            android:id="@+id/avatar_1"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="#FF5C5C"
-                            android:gravity="center"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="CP"
-                            android:textColor="#FFFFFF"
-                            android:textSize="17dp"
-                            android:textStyle="bold"
-                            android:padding="0dp"
-                            android:focusable="false"
-                            android:focusableInTouchMode="false"
-                            app:iconPadding="0dp" />
-                        <!--
-                        Contains the actual profile picture
-                        Invisible (no source or background) if pfp doesnt exist
-                        - Branden
-                        -->
-                        <ImageView
-                            android:id="@+id/pfp"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="#0000"
-                            android:src="#0000"
-                            android:scaleType="centerCrop"
-                            android:gravity="center"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:padding="0dp"
-                            app:iconPadding="0dp" />
-                    </FrameLayout>
-
-                    <!-- Name + distance -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:paddingStart="14dp">
+                        android:orientation="vertical">
 
-                        <EditText
-                            android:id="@+id/profileName"
+                        <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:text="Edit Your Interests"
                             android:textColor="#FFFFFF"
-                            android:textSize="15dp"
-                            android:textStyle="bold"
-                            android:inputType="text"
-                            android:focusable="false"
-                            android:focusableInTouchMode="false"
-                            android:hint="Enter name, age..."
-                            android:textColorHint="#FFFFFF"
-                            android:text="Cooper Ptacek, 21" />
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
 
-                        <EditText
-                            android:id="@+id/profileLocation"
+                        <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:text="Tap to add or remove interest categories"
                             android:textColor="#8888A4"
-                            android:textSize="12dp"
-                            android:inputType="text"
-                            android:focusable="false"
-                            android:focusableInTouchMode="false"
-                            android:hint="Enter Location..."
-                            android:textColorHint="#8888A4"
-                            android:text="Forest Lake, MN" />
+                            android:textSize="11sp"
+                            android:layout_marginTop="2dp"/>
 
                     </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/cats_chevron"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="▼"
+                        android:textColor="#8888A4"
+                        android:textSize="12sp"/>
+
                 </LinearLayout>
 
-                <!-- Bio -->
-                <EditText
-                    android:id="@+id/profileDescription"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="0dp"
-                    android:textColor="#8888A4"
-                    android:textSize="13sp"
-                    android:maxLines="2"
-                    android:inputType="textMultiLine"
-                    android:focusable="false"
-                    android:focusableInTouchMode="false"
-                    android:hint="Enter bio..."
-                    android:textColorHint="#8888A4"
-                    android:text="Statistics and Computer Science Major at Gustavus Adolphus College. Professional Nerd." />
-
-                <!-- Interest chips -->
+                <!-- Interests chip picker (collapsed by default) -->
                 <LinearLayout
+                    android:id="@+id/interest_picker_section"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:background="#16161F"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="16dp"
+                    android:visibility="gone">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="7dp"
-                        android:text="Music"
-                        android:textColor="#8888A4"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:paddingStart="9dp"
-                        android:paddingEnd="9dp"
-                        android:paddingTop="5dp"
-                        android:paddingBottom="5dp"
-                        android:background="#0D0D14"/>
+                    <!-- Divider line -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#22222F"
+                        android:layout_marginBottom="12dp"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:id="@+id/profile_chip_container"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="7dp"
-                        android:text="Hiking"
-                        android:textColor="#8888A4"
-                        android:textSize="11dp"
-                        android:paddingStart="9dp"
-                        android:paddingEnd="9dp"
-                        android:paddingTop="5dp"
-                        android:paddingBottom="5dp"
-                        android:background="#0D0D14"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Disc Golf"
-                        android:textColor="#8888A4"
-                        android:textSize="11dp"
-                        android:paddingStart="9dp"
-                        android:paddingEnd="9dp"
-                        android:paddingTop="5dp"
-                        android:paddingBottom="5dp"
-                        android:background="#0D0D14"/>
+                        android:orientation="vertical"/>
 
                 </LinearLayout>
+
+                <!-- ── ACTIVITIES SECTION ────────────────────────────── -->
+
+                <!-- Collapsible header for Activities -->
+                <LinearLayout
+                    android:id="@+id/activities_section_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="#16161F"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:layout_marginTop="8dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/activities_section_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Edit Your Activities"
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/activities_section_subtitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Add specific activities within your interests"
+                            android:textColor="#8888A4"
+                            android:textSize="11sp"
+                            android:layout_marginTop="2dp"/>
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/activities_chevron"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="▼"
+                        android:textColor="#8888A4"
+                        android:textSize="12sp"/>
+
+                </LinearLayout>
+
+                <!-- Activities editor content (collapsed by default) -->
+                <LinearLayout
+                    android:id="@+id/activities_section_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="#16161F"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="16dp"
+                    android:visibility="gone">
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#22222F"
+                        android:layout_marginBottom="4dp"/>
+
+                    <!-- Dynamically populated per-category activity editors -->
+                    <LinearLayout
+                        android:id="@+id/activities_editor_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"/>
+
+                </LinearLayout>
+
             </LinearLayout>
+
         </LinearLayout>
-    </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/bottom_sheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#1C1C28"
+        android:elevation="16dp"
+        android:visibility="gone"/>
 
     <include
         layout="@layout/nav_bar"
         android:layout_width="match_parent"
         android:layout_height="60dp" />
-</LinearLayout>
+
+    </LinearLayout>
