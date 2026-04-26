@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="#16161F"
-    android:padding="18dp"
+    android:padding="12dp"
     android:layout_marginBottom="14dp">
 
     <LinearLayout
@@ -13,12 +13,12 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginBottom="10dp">
+        android:layout_marginBottom="6dp">
 
         <!-- Avatar circle -->
         <FrameLayout
-            android:layout_width="52dp"
-            android:layout_height="52dp" >
+            android:layout_width="64dp"
+            android:layout_height="64dp" >
             <TextView
                 android:id="@+id/friend_avatar"
                 android:layout_width="match_parent"
@@ -62,7 +62,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:text="Name Placeholder" />
 
@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:text="+ Add"
             android:textColor="#FFFFFF"
-            android:textSize="12sp"
+            android:textSize="15sp"
             android:backgroundTint="#2ECC71"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
@@ -120,8 +120,8 @@
         android:text="I Am Currently:"
         android:textColor="#FFFFFF"
         android:textSize="13sp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="2dp" />
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="1dp" />
 
     <TextView
         android:id="@+id/friend_current_activity"
@@ -136,7 +136,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="10dp" />
+        android:layout_marginTop="5dp" />
 
 
 </LinearLayout>

@@ -83,18 +83,21 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:background="#16161F"
-                    android:padding="18dp">
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="10dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="10dp">
+                        android:layout_marginBottom="6dp">
 
                         <FrameLayout
-                            android:layout_width="52dp"
-                            android:layout_height="52dp">
+                            android:layout_width="64dp"
+                            android:layout_height="64dp">
 
                             <Button
                                 android:id="@+id/avatar_1"
@@ -136,7 +139,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textColor="#FFFFFF"
-                                android:textSize="15sp"
+                                android:textSize="18sp"
                                 android:textStyle="bold"
                                 android:inputType="text"
                                 android:focusable="false"
@@ -151,6 +154,8 @@
                                 android:layout_height="wrap_content"
                                 android:textColor="#8888A4"
                                 android:textSize="12sp"
+                                android:paddingTop="0dp"
+                                android:paddingBottom="0dp"
                                 android:inputType="text"
                                 android:focusable="false"
                                 android:focusableInTouchMode="false"
@@ -165,9 +170,11 @@
                         android:id="@+id/profileDescription"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
+                        android:layout_marginBottom="5dp"
                         android:textColor="#8888A4"
                         android:textSize="13sp"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="6dp"
                         android:maxLines="6"
                         android:inputType="textMultiLine"
                         android:focusable="false"
@@ -183,7 +190,7 @@
                         android:text="I Am Currently:"
                         android:textColor="#FFFFFF"
                         android:textSize="13sp"
-                        android:layout_marginBottom="2dp" />
+                        android:layout_marginBottom="1dp" />
 
                     <EditText
                         android:id="@+id/profileCurrentActivity"
@@ -209,7 +216,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="6dp"
+                        android:layout_marginTop="3dp"
                         android:layout_marginRight="12dp"
+                        android:paddingTop="0dp"
                         android:textColor="#8888A4"
                         android:textSize="13sp"
                         android:maxLines="1"
@@ -223,6 +232,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="6dp"
+                        android:layout_marginTop="3dp"
+                        android:paddingTop="0dp"
                         android:textColor="#8888A4"
                         android:textSize="13sp"
                         android:maxLines="1"

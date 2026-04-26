@@ -50,6 +50,12 @@ class FriendAdapter(
         holder.avatar.text = friend.name.split(" ").take(2).joinToString("") { it.first().uppercase() }
         holder.location.text = friend.location
         holder.bio.text = friend.bio
+        //If nothing to display dont have a bunch of blank space
+        if (friend.bio.isBlank() || friend.bio == "null") {
+            holder.bio.visibility = View.GONE
+        } else {
+            holder.bio.visibility = View.VISIBLE
+        }
         holder.currentActivity.text = friend.currentActivity
         if (friend.currentActivity.isEmpty() || friend.currentActivity == "null") {
             holder.currentActivityLabel.visibility = View.GONE
@@ -112,6 +118,14 @@ class FriendAdapter(
             currentRow!!.addView(chip)
             currentRowWidth += chipWidth
         }
+        //Agian if nothing do display dont have empty space for it
+        if (friend.categories.isEmpty()) {
+            holder.categoriesContainer.visibility = View.GONE
+        } else {
+            holder.categoriesContainer.visibility = View.VISIBLE
+        }
+
+
 
         //"Add friend" button tracking for the UI
         val addBtn = holder.itemView.findViewById<Button>(R.id.btn_add_friend)

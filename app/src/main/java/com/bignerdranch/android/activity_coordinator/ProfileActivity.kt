@@ -840,8 +840,8 @@ class ProfileActivity : AppCompatActivity() {
                 Log.w("times", (current-now).toString() )
                 if ((current-now).isNegative()){
                     db.document("users/$uid").update("currentTime", 0,"currentMin", 0, "profileCurrentActivity", "")
-                    findViewById<EditText>(R.id.time_min).setText("0")
-                    findViewById<EditText>(R.id.time_hour).setText("0")
+                    findViewById<EditText>(R.id.time_min).setText("")
+                    findViewById<EditText>(R.id.time_hour).setText("")
                     findViewById<EditText>(R.id.profileCurrentActivity).setText("")
                     for (field in arrayOf("currentTime","currentMin","profileCurrentActivity")){
 
