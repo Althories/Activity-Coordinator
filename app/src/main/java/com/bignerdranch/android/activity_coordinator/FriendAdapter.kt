@@ -45,6 +45,9 @@ class FriendAdapter(
         val context = holder.itemView.context
         val dp = context.resources.displayMetrics.density
 
+        holder.currentActivityLabel.visibility = View.VISIBLE
+        holder.currentActivity.visibility = View.VISIBLE
+
         // Standard text bindings
         holder.name.text = friend.name
         holder.avatar.text = friend.name.split(" ").take(2).joinToString("") { it.first().uppercase() }

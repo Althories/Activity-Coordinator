@@ -18,8 +18,14 @@ class ActivityAdapter(
         val description: TextView = view.findViewById(R.id.friend_bio)
         val addActivityButton: Button = view.findViewById(R.id.btn_add_friend)
         val avatar: TextView = view.findViewById(R.id.friend_avatar)
-    }
+        val currentActivityLabel: TextView = view.findViewById(R.id.friend_current_activity_label)
+        val currentActivity: TextView = view.findViewById(R.id.friend_current_activity)
 
+        init {
+            currentActivityLabel.visibility = View.GONE
+            currentActivity.visibility = View.GONE
+        }
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ActivityViewHolder {
         //Reuses item_friend.xml for now since the layout is identical
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_friend, parent, false)
@@ -31,6 +37,8 @@ class ActivityAdapter(
         val currentUid = UserSession.currentUserId ?: "" //necessary reference to currentUserId to check who's joining an event
 
         holder.name.text = event.eventName
+
+
 
         //mini block for combining inviter name and location
         val inviteText = "Invited by ${event.creatorName.ifEmpty { "a Friend" }}"
